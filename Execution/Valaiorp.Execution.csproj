@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Core\Valaiorp.Core.csproj" />
+    <ProjectReference Include="..\Policy\Valaiorp.Policy.csproj" />
+    <ProjectReference Include="..\Planner\Valaiorp.Planner.csproj" />
+    <ProjectReference Include="..\Tools\Valaiorp.Tools.csproj" />
+    <ProjectReference Include="..\Memory\Valaiorp.Memory.csproj" />
+    <ProjectReference Include="..\Retry\Valaiorp.Retry.csproj" />
+    <ProjectReference Include="..\Configuration\Valaiorp.Configuration.csproj" />
+  </ItemGroup>
+</Project>

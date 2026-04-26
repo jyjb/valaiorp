@@ -1,0 +1,19 @@
+{
+  "defaultBaseUrl": "https://generativelanguage.googleapis.com/v1beta/openai/",
+  "endpoint": "/v1/chat/completions",
+  "authHeader": { "name": "Authorization", "value": "Bearer {apiKey}" },
+  "fixedHeaders": [],
+  "systemPosition": "firstMessage",
+  "requestBody": {
+    "modelKey": "model",
+    "maxTokensKey": "max_tokens",
+    "temperaturePath": "temperature"
+  },
+  "responseMapping": {
+    "contentPath": "choices.0.message.content",
+    "finishReasonPath": "choices.0.finish_reason",
+    "inputTokensPath": "usage.prompt_tokens",
+    "outputTokensPath": "usage.completion_tokens",
+    "modelPath": "model"
+  }
+}

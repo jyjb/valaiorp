@@ -1,0 +1,18 @@
+{
+  "defaultBaseUrl": "http://localhost:11434",
+  "endpoint": "/api/chat",
+  "authHeader": null,
+  "fixedHeaders": [],
+  "systemPosition": "firstMessage",
+  "requestBody": {
+    "modelKey": "model",
+    "maxTokensKey": null,
+    "temperaturePath": "options.temperature",
+    "fixedFields": { "stream": false }
+  },
+  "responseMapping": {
+    "contentPath": "message.content",
+    "finishReasonPath": "done_reason",
+    "modelPath": "model"
+  }
+}

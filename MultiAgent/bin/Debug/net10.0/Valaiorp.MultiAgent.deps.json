@@ -1,0 +1,197 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v10.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v10.0": {
+      "Valaiorp.MultiAgent/1.0.0": {
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.0",
+          "Valaiorp.Core": "1.0.0",
+          "Valaiorp.Execution": "1.0.0",
+          "Valaiorp.Memory": "1.0.0",
+          "Valaiorp.Policy": "1.0.0"
+        },
+        "runtime": {
+          "Valaiorp.MultiAgent.dll": {}
+        }
+      },
+      "Microsoft.Extensions.DependencyInjection/10.0.0": {
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.0"
+        },
+        "runtime": {
+          "lib/net10.0/Microsoft.Extensions.DependencyInjection.dll": {
+            "assemblyVersion": "10.0.0.0",
+            "fileVersion": "10.0.25.52411"
+          }
+        }
+      },
+      "Microsoft.Extensions.DependencyInjection.Abstractions/10.0.0": {
+        "runtime": {
+          "lib/net10.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {
+            "assemblyVersion": "10.0.0.0",
+            "fileVersion": "10.0.25.52411"
+          }
+        }
+      },
+      "Valaiorp.Configuration/1.0.0": {
+        "dependencies": {
+          "Valaiorp.Core": "1.0.0"
+        },
+        "runtime": {
+          "Valaiorp.Configuration.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "Valaiorp.Core/1.0.0": {
+        "runtime": {
+          "Valaiorp.Core.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "Valaiorp.Execution/1.0.0": {
+        "dependencies": {
+          "Valaiorp.Configuration": "1.0.0",
+          "Valaiorp.Core": "1.0.0",
+          "Valaiorp.Memory": "1.0.0",
+          "Valaiorp.Planner": "1.0.0",
+          "Valaiorp.Policy": "1.0.0",
+          "Valaiorp.Retry": "1.0.0",
+          "Valaiorp.Tools": "1.0.0"
+        },
+        "runtime": {
+          "Valaiorp.Execution.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "Valaiorp.Memory/1.0.0": {
+        "dependencies": {
+          "Valaiorp.Core": "1.0.0"
+        },
+        "runtime": {
+          "Valaiorp.Memory.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "Valaiorp.Planner/1.0.0": {
+        "dependencies": {
+          "Valaiorp.Core": "1.0.0",
+          "Valaiorp.Policy": "1.0.0",
+          "Valaiorp.Tools": "1.0.0"
+        },
+        "runtime": {
+          "Valaiorp.Planner.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "Valaiorp.Policy/1.0.0": {
+        "dependencies": {
+          "Valaiorp.Core": "1.0.0"
+        },
+        "runtime": {
+          "Valaiorp.Policy.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "Valaiorp.Retry/1.0.0": {
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection": "10.0.0",
+          "Valaiorp.Core": "1.0.0"
+        },
+        "runtime": {
+          "Valaiorp.Retry.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "Valaiorp.Tools/1.0.0": {
+        "dependencies": {
+          "Valaiorp.Core": "1.0.0"
+        },
+        "runtime": {
+          "Valaiorp.Tools.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "Valaiorp.MultiAgent/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Microsoft.Extensions.DependencyInjection/10.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-f0RBabswJq+gRu5a+hWIobrLWiUYPKMhCD9WO3sYBAdSy3FFH14LMvLVFZc2kPSCimBLxSuitUhsd6tb0TAY6A==",
+      "path": "microsoft.extensions.dependencyinjection/10.0.0",
+      "hashPath": "microsoft.extensions.dependencyinjection.10.0.0.nupkg.sha512"
+    },
+    "Microsoft.Extensions.DependencyInjection.Abstractions/10.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-L3AdmZ1WOK4XXT5YFPEwyt0ep6l8lGIPs7F5OOBZc77Zqeo01Of7XXICy47628sdVl0v/owxYJTe86DTgFwKCA==",
+      "path": "microsoft.extensions.dependencyinjection.abstractions/10.0.0",
+      "hashPath": "microsoft.extensions.dependencyinjection.abstractions.10.0.0.nupkg.sha512"
+    },
+    "Valaiorp.Configuration/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Valaiorp.Core/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Valaiorp.Execution/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Valaiorp.Memory/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Valaiorp.Planner/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Valaiorp.Policy/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Valaiorp.Retry/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Valaiorp.Tools/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

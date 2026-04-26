@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet restore *)",
+      "Bash(ls -la \"d:\\\\\\\\_repos\\\\valaiorp\")",
+      "PowerShell(Get-ChildItem -Path \"d:\\\\_repos\\\\valaiorp\" -Directory | Where-Object { $_.Name -match '\\(Core|Configuration|Memory|Tools|BasicTools|Knowledge|Policy|Planner|Execution|Retry|Logging|Observability|Runtime|LlmProviders|MultiAgent\\)' } | Select-Object Name)"
+    ]
+  }
+}

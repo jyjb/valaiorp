@@ -1,0 +1,51 @@
+<Solution>
+  <Folder Name="/Configuration/">
+    <Project Path="Configuration/Valaiorp.Configuration.csproj" />
+  </Folder>
+  <Folder Name="/Core/">
+    <Project Path="Core/Valaiorp.Core.csproj" />
+  </Folder>
+  <Folder Name="/Escalation/">
+    <Project Path="Escalation/Valaiorp.Escalation.csproj" />
+  </Folder>
+  <Folder Name="/Execution/">
+    <Project Path="Execution/Valaiorp.Execution.csproj" />
+  </Folder>
+  <Folder Name="/Knowledge/">
+    <Project Path="Knowledge/Valaiorp.Knowledge.csproj" />
+  </Folder>
+  <Folder Name="/Logging/">
+    <Project Path="Logging/Valaiorp.Logging.csproj" />
+  </Folder>
+  <Folder Name="/Memory/">
+    <Project Path="Memory/Valaiorp.Memory.csproj" />
+  </Folder>
+  <Folder Name="/Observability/">
+    <Project Path="Observability/Valaiorp.Observability.csproj" />
+  </Folder>
+  <Folder Name="/Planner/">
+    <Project Path="Planner/Valaiorp.Planner.csproj" />
+  </Folder>
+  <Folder Name="/Policy/">
+    <Project Path="Policy/Valaiorp.Policy.csproj" />
+  </Folder>
+  <Folder Name="/Retry/">
+    <Project Path="Retry/Valaiorp.Retry.csproj" />
+  </Folder>
+  <Folder Name="/Runtime/">
+    <Project Path="Runtime/Valaiorp.Runtime.csproj" />
+  </Folder>
+  <Folder Name="/BasicTools/">
+    <Project Path="BasicTools/Valaiorp.BasicTools.csproj" />
+  </Folder>
+  <Folder Name="/Tools/">
+    <Project Path="Tools/Valaiorp.Tools.csproj" />
+  </Folder>
+  <Folder Name="/LlmProviders/">
+    <Project Path="LlmProviders/Valaiorp.LlmProviders.csproj" />
+  </Folder>
+  <Folder Name="/MultiAgent/">
+    <Project Path="MultiAgent/Valaiorp.MultiAgent.csproj" />
+  </Folder>
+
+</Solution>

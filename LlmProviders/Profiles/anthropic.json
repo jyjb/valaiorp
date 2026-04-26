@@ -1,0 +1,21 @@
+{
+  "defaultBaseUrl": "https://api.anthropic.com",
+  "endpoint": "/v1/messages",
+  "authHeader": { "name": "x-api-key", "value": "{apiKey}" },
+  "fixedHeaders": [
+    { "name": "anthropic-version", "value": "2023-06-01" }
+  ],
+  "systemPosition": "topLevel",
+  "requestBody": {
+    "modelKey": "model",
+    "maxTokensKey": "max_tokens",
+    "temperaturePath": "temperature"
+  },
+  "responseMapping": {
+    "contentPath": "content.0.text",
+    "finishReasonPath": "stop_reason",
+    "inputTokensPath": "usage.input_tokens",
+    "outputTokensPath": "usage.output_tokens",
+    "modelPath": "model"
+  }
+}

@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Core\Valaiorp.Core.csproj" />
+    <ProjectReference Include="..\Configuration\Valaiorp.Configuration.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Profiles\anthropic.json" />
+    <EmbeddedResource Include="Profiles\openai.json" />
+    <EmbeddedResource Include="Profiles\ollama.json" />
+    <EmbeddedResource Include="Profiles\gemini.json" />
+    <EmbeddedResource Include="Profiles\mistral.json" />
+    <EmbeddedResource Include="Profiles\cohere.json" />
+  </ItemGroup>
+
+  <!-- System.Net.Http and System.Text.Json are BCL — no NuGet packages needed -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.0" />
+  </ItemGroup>
+
+</Project>

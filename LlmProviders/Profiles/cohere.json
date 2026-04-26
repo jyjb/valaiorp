@@ -1,0 +1,19 @@
+{
+  "defaultBaseUrl": "https://api.cohere.com",
+  "endpoint": "/v2/chat",
+  "authHeader": { "name": "Authorization", "value": "Bearer {apiKey}" },
+  "fixedHeaders": [],
+  "systemPosition": "firstMessage",
+  "requestBody": {
+    "modelKey": "model",
+    "maxTokensKey": "max_tokens",
+    "temperaturePath": "temperature"
+  },
+  "responseMapping": {
+    "contentPath": "message.content.0.text",
+    "finishReasonPath": "finish_reason",
+    "inputTokensPath": "usage.billed_units.input_tokens",
+    "outputTokensPath": "usage.billed_units.output_tokens",
+    "modelPath": "model"
+  }
+}
