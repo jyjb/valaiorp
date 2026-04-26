@@ -1,7 +1,7 @@
 {
   "format": 1,
   "restore": {
-    "D:\\._repos\\valaiorp\\MultiAgent\\Valaiorp.MultiAgent.csproj": {}
+    "d:\\._repos\\valaiorp\\MultiAgent\\Valaiorp.MultiAgent.csproj": {}
   },
   "projects": {
     "D:\\._repos\\valaiorp\\Configuration\\Valaiorp.Configuration.csproj": {
@@ -33,8 +33,8 @@
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
-              "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj": {
-                "projectPath": "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj"
+              "d:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj": {
+                "projectPath": "d:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj"
               }
             }
           }
@@ -348,14 +348,14 @@
         }
       }
     },
-    "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj": {
+    "d:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj",
+        "projectUniqueName": "d:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj",
         "projectName": "Valaiorp.Core",
-        "projectPath": "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj",
+        "projectPath": "d:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj",
         "packagesPath": "C:\\Users\\findj\\.nuget\\packages\\",
-        "outputPath": "D:\\._repos\\valaiorp\\Core\\obj\\",
+        "outputPath": "d:\\._repos\\valaiorp\\Core\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -688,14 +688,14 @@
         }
       }
     },
-    "D:\\._repos\\valaiorp\\Execution\\Valaiorp.Execution.csproj": {
+    "d:\\._repos\\valaiorp\\Execution\\Valaiorp.Execution.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\._repos\\valaiorp\\Execution\\Valaiorp.Execution.csproj",
+        "projectUniqueName": "d:\\._repos\\valaiorp\\Execution\\Valaiorp.Execution.csproj",
         "projectName": "Valaiorp.Execution",
-        "projectPath": "D:\\._repos\\valaiorp\\Execution\\Valaiorp.Execution.csproj",
+        "projectPath": "d:\\._repos\\valaiorp\\Execution\\Valaiorp.Execution.csproj",
         "packagesPath": "C:\\Users\\findj\\.nuget\\packages\\",
-        "outputPath": "D:\\._repos\\valaiorp\\Execution\\obj\\",
+        "outputPath": "d:\\._repos\\valaiorp\\Execution\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -720,23 +720,23 @@
               "D:\\._repos\\valaiorp\\Configuration\\Valaiorp.Configuration.csproj": {
                 "projectPath": "D:\\._repos\\valaiorp\\Configuration\\Valaiorp.Configuration.csproj"
               },
-              "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj": {
-                "projectPath": "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj"
+              "d:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj": {
+                "projectPath": "d:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj"
               },
-              "D:\\._repos\\valaiorp\\Memory\\Valaiorp.Memory.csproj": {
-                "projectPath": "D:\\._repos\\valaiorp\\Memory\\Valaiorp.Memory.csproj"
+              "d:\\._repos\\valaiorp\\Memory\\Valaiorp.Memory.csproj": {
+                "projectPath": "d:\\._repos\\valaiorp\\Memory\\Valaiorp.Memory.csproj"
               },
-              "D:\\._repos\\valaiorp\\Planner\\Valaiorp.Planner.csproj": {
-                "projectPath": "D:\\._repos\\valaiorp\\Planner\\Valaiorp.Planner.csproj"
+              "d:\\._repos\\valaiorp\\Planner\\Valaiorp.Planner.csproj": {
+                "projectPath": "d:\\._repos\\valaiorp\\Planner\\Valaiorp.Planner.csproj"
               },
-              "D:\\._repos\\valaiorp\\Policy\\Valaiorp.Policy.csproj": {
-                "projectPath": "D:\\._repos\\valaiorp\\Policy\\Valaiorp.Policy.csproj"
+              "d:\\._repos\\valaiorp\\Policy\\Valaiorp.Policy.csproj": {
+                "projectPath": "d:\\._repos\\valaiorp\\Policy\\Valaiorp.Policy.csproj"
               },
-              "D:\\._repos\\valaiorp\\Retry\\Valaiorp.Retry.csproj": {
-                "projectPath": "D:\\._repos\\valaiorp\\Retry\\Valaiorp.Retry.csproj"
+              "d:\\._repos\\valaiorp\\Retry\\Valaiorp.Retry.csproj": {
+                "projectPath": "d:\\._repos\\valaiorp\\Retry\\Valaiorp.Retry.csproj"
               },
-              "D:\\._repos\\valaiorp\\Tools\\Valaiorp.Tools.csproj": {
-                "projectPath": "D:\\._repos\\valaiorp\\Tools\\Valaiorp.Tools.csproj"
+              "d:\\._repos\\valaiorp\\Tools\\Valaiorp.Tools.csproj": {
+                "projectPath": "d:\\._repos\\valaiorp\\Tools\\Valaiorp.Tools.csproj"
               }
             }
           }
@@ -1050,14 +1050,14 @@
         }
       }
     },
-    "D:\\._repos\\valaiorp\\Memory\\Valaiorp.Memory.csproj": {
+    "d:\\._repos\\valaiorp\\Memory\\Valaiorp.Memory.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\._repos\\valaiorp\\Memory\\Valaiorp.Memory.csproj",
+        "projectUniqueName": "d:\\._repos\\valaiorp\\Memory\\Valaiorp.Memory.csproj",
         "projectName": "Valaiorp.Memory",
-        "projectPath": "D:\\._repos\\valaiorp\\Memory\\Valaiorp.Memory.csproj",
+        "projectPath": "d:\\._repos\\valaiorp\\Memory\\Valaiorp.Memory.csproj",
         "packagesPath": "C:\\Users\\findj\\.nuget\\packages\\",
-        "outputPath": "D:\\._repos\\valaiorp\\Memory\\obj\\",
+        "outputPath": "d:\\._repos\\valaiorp\\Memory\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -1079,8 +1079,8 @@
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
-              "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj": {
-                "projectPath": "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj"
+              "d:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj": {
+                "projectPath": "d:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj"
               }
             }
           }
@@ -1394,14 +1394,14 @@
         }
       }
     },
-    "D:\\._repos\\valaiorp\\MultiAgent\\Valaiorp.MultiAgent.csproj": {
+    "d:\\._repos\\valaiorp\\MultiAgent\\Valaiorp.MultiAgent.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\._repos\\valaiorp\\MultiAgent\\Valaiorp.MultiAgent.csproj",
+        "projectUniqueName": "d:\\._repos\\valaiorp\\MultiAgent\\Valaiorp.MultiAgent.csproj",
         "projectName": "Valaiorp.MultiAgent",
-        "projectPath": "D:\\._repos\\valaiorp\\MultiAgent\\Valaiorp.MultiAgent.csproj",
+        "projectPath": "d:\\._repos\\valaiorp\\MultiAgent\\Valaiorp.MultiAgent.csproj",
         "packagesPath": "C:\\Users\\findj\\.nuget\\packages\\",
-        "outputPath": "D:\\._repos\\valaiorp\\MultiAgent\\obj\\",
+        "outputPath": "d:\\._repos\\valaiorp\\MultiAgent\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -1423,17 +1423,17 @@
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
-              "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj": {
-                "projectPath": "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj"
+              "d:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj": {
+                "projectPath": "d:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj"
               },
-              "D:\\._repos\\valaiorp\\Execution\\Valaiorp.Execution.csproj": {
-                "projectPath": "D:\\._repos\\valaiorp\\Execution\\Valaiorp.Execution.csproj"
+              "d:\\._repos\\valaiorp\\Execution\\Valaiorp.Execution.csproj": {
+                "projectPath": "d:\\._repos\\valaiorp\\Execution\\Valaiorp.Execution.csproj"
               },
-              "D:\\._repos\\valaiorp\\Memory\\Valaiorp.Memory.csproj": {
-                "projectPath": "D:\\._repos\\valaiorp\\Memory\\Valaiorp.Memory.csproj"
+              "d:\\._repos\\valaiorp\\Memory\\Valaiorp.Memory.csproj": {
+                "projectPath": "d:\\._repos\\valaiorp\\Memory\\Valaiorp.Memory.csproj"
               },
-              "D:\\._repos\\valaiorp\\Policy\\Valaiorp.Policy.csproj": {
-                "projectPath": "D:\\._repos\\valaiorp\\Policy\\Valaiorp.Policy.csproj"
+              "d:\\._repos\\valaiorp\\Policy\\Valaiorp.Policy.csproj": {
+                "projectPath": "d:\\._repos\\valaiorp\\Policy\\Valaiorp.Policy.csproj"
               }
             }
           }
@@ -1753,14 +1753,14 @@
         }
       }
     },
-    "D:\\._repos\\valaiorp\\Planner\\Valaiorp.Planner.csproj": {
+    "d:\\._repos\\valaiorp\\Planner\\Valaiorp.Planner.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\._repos\\valaiorp\\Planner\\Valaiorp.Planner.csproj",
+        "projectUniqueName": "d:\\._repos\\valaiorp\\Planner\\Valaiorp.Planner.csproj",
         "projectName": "Valaiorp.Planner",
-        "projectPath": "D:\\._repos\\valaiorp\\Planner\\Valaiorp.Planner.csproj",
+        "projectPath": "d:\\._repos\\valaiorp\\Planner\\Valaiorp.Planner.csproj",
         "packagesPath": "C:\\Users\\findj\\.nuget\\packages\\",
-        "outputPath": "D:\\._repos\\valaiorp\\Planner\\obj\\",
+        "outputPath": "d:\\._repos\\valaiorp\\Planner\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -1782,14 +1782,14 @@
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
-              "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj": {
-                "projectPath": "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj"
+              "d:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj": {
+                "projectPath": "d:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj"
               },
-              "D:\\._repos\\valaiorp\\Policy\\Valaiorp.Policy.csproj": {
-                "projectPath": "D:\\._repos\\valaiorp\\Policy\\Valaiorp.Policy.csproj"
+              "d:\\._repos\\valaiorp\\Policy\\Valaiorp.Policy.csproj": {
+                "projectPath": "d:\\._repos\\valaiorp\\Policy\\Valaiorp.Policy.csproj"
               },
-              "D:\\._repos\\valaiorp\\Tools\\Valaiorp.Tools.csproj": {
-                "projectPath": "D:\\._repos\\valaiorp\\Tools\\Valaiorp.Tools.csproj"
+              "d:\\._repos\\valaiorp\\Tools\\Valaiorp.Tools.csproj": {
+                "projectPath": "d:\\._repos\\valaiorp\\Tools\\Valaiorp.Tools.csproj"
               }
             }
           }
@@ -2103,14 +2103,14 @@
         }
       }
     },
-    "D:\\._repos\\valaiorp\\Policy\\Valaiorp.Policy.csproj": {
+    "d:\\._repos\\valaiorp\\Policy\\Valaiorp.Policy.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\._repos\\valaiorp\\Policy\\Valaiorp.Policy.csproj",
+        "projectUniqueName": "d:\\._repos\\valaiorp\\Policy\\Valaiorp.Policy.csproj",
         "projectName": "Valaiorp.Policy",
-        "projectPath": "D:\\._repos\\valaiorp\\Policy\\Valaiorp.Policy.csproj",
+        "projectPath": "d:\\._repos\\valaiorp\\Policy\\Valaiorp.Policy.csproj",
         "packagesPath": "C:\\Users\\findj\\.nuget\\packages\\",
-        "outputPath": "D:\\._repos\\valaiorp\\Policy\\obj\\",
+        "outputPath": "d:\\._repos\\valaiorp\\Policy\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -2132,8 +2132,8 @@
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
-              "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj": {
-                "projectPath": "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj"
+              "d:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj": {
+                "projectPath": "d:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj"
               }
             }
           }
@@ -2447,14 +2447,14 @@
         }
       }
     },
-    "D:\\._repos\\valaiorp\\Retry\\Valaiorp.Retry.csproj": {
+    "d:\\._repos\\valaiorp\\Retry\\Valaiorp.Retry.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\._repos\\valaiorp\\Retry\\Valaiorp.Retry.csproj",
+        "projectUniqueName": "d:\\._repos\\valaiorp\\Retry\\Valaiorp.Retry.csproj",
         "projectName": "Valaiorp.Retry",
-        "projectPath": "D:\\._repos\\valaiorp\\Retry\\Valaiorp.Retry.csproj",
+        "projectPath": "d:\\._repos\\valaiorp\\Retry\\Valaiorp.Retry.csproj",
         "packagesPath": "C:\\Users\\findj\\.nuget\\packages\\",
-        "outputPath": "D:\\._repos\\valaiorp\\Retry\\obj\\",
+        "outputPath": "d:\\._repos\\valaiorp\\Retry\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -2476,8 +2476,8 @@
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
-              "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj": {
-                "projectPath": "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj"
+              "d:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj": {
+                "projectPath": "d:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj"
               }
             }
           }
@@ -2797,14 +2797,14 @@
         }
       }
     },
-    "D:\\._repos\\valaiorp\\Tools\\Valaiorp.Tools.csproj": {
+    "d:\\._repos\\valaiorp\\Tools\\Valaiorp.Tools.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\._repos\\valaiorp\\Tools\\Valaiorp.Tools.csproj",
+        "projectUniqueName": "d:\\._repos\\valaiorp\\Tools\\Valaiorp.Tools.csproj",
         "projectName": "Valaiorp.Tools",
-        "projectPath": "D:\\._repos\\valaiorp\\Tools\\Valaiorp.Tools.csproj",
+        "projectPath": "d:\\._repos\\valaiorp\\Tools\\Valaiorp.Tools.csproj",
         "packagesPath": "C:\\Users\\findj\\.nuget\\packages\\",
-        "outputPath": "D:\\._repos\\valaiorp\\Tools\\obj\\",
+        "outputPath": "d:\\._repos\\valaiorp\\Tools\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -2826,8 +2826,8 @@
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
-              "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj": {
-                "projectPath": "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj"
+              "d:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj": {
+                "projectPath": "d:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj"
               }
             }
           }

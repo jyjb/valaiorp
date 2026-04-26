@@ -36,3 +36,5 @@ D:\._repos\valaiorp\Runtime\obj\Debug\net10.0\Valaiorp.Runtime.pdb
 D:\._repos\valaiorp\Runtime\obj\Debug\net10.0\ref\Valaiorp.Runtime.dll
 D:\._repos\valaiorp\Runtime\bin\Debug\net10.0\Valaiorp.BasicTools.dll
 D:\._repos\valaiorp\Runtime\bin\Debug\net10.0\Valaiorp.BasicTools.pdb
+d:\._repos\valaiorp\Runtime\bin\Debug\net10.0\Valaiorp.LlmProviders.dll
+d:\._repos\valaiorp\Runtime\bin\Debug\net10.0\Valaiorp.LlmProviders.pdb

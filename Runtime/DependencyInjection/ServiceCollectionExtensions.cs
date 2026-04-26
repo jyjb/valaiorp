@@ -18,6 +18,7 @@ namespace Valaiorp.Runtime.DependencyInjection
     using Valaiorp.Planner.Planners;
     using Valaiorp.Policy.Contracts;
     using Valaiorp.Policy.Engines;
+    using Valaiorp.LlmProviders.DependencyInjection;
     using Valaiorp.Retry.DependencyInjection;
     using Valaiorp.Tools.Contracts;
     using Valaiorp.Tools.Enhanced.Logging;
@@ -101,6 +102,14 @@ namespace Valaiorp.Runtime.DependencyInjection
             services.AddSingleton<ILogger, ConsoleLogger>();
             services.AddSingleton<ExecutionTracer>();
             services.AddSingleton<MetricsCollector>();
+
+            // LLM client — auto-wire from config if a provider is specified and no explicit
+            // ILlmClient has already been registered by the caller.
+            if (!string.IsNullOrWhiteSpace(config.Llm.Provider) &&
+                !services.Any(d => d.ServiceType == typeof(ILlmClient)))
+            {
+                services.AddLlmClient(config.Llm);
+            }
 
             // Config
             services.AddSingleton(config);

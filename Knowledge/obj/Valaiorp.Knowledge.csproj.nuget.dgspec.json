@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\._repos\\valaiorp\\Knowledge\\Valaiorp.Knowledge.csproj": {}
+    "d:\\._repos\\valaiorp\\Knowledge\\Valaiorp.Knowledge.csproj": {}
   },
   "projects": {
-    "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj": {
+    "d:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj",
+        "projectUniqueName": "d:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj",
         "projectName": "Valaiorp.Core",
-        "projectPath": "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj",
+        "projectPath": "d:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj",
         "packagesPath": "C:\\Users\\findj\\.nuget\\packages\\",
-        "outputPath": "D:\\._repos\\valaiorp\\Core\\obj\\",
+        "outputPath": "d:\\._repos\\valaiorp\\Core\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -344,14 +344,14 @@
         }
       }
     },
-    "D:\\._repos\\valaiorp\\Knowledge\\Valaiorp.Knowledge.csproj": {
+    "d:\\._repos\\valaiorp\\Knowledge\\Valaiorp.Knowledge.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\._repos\\valaiorp\\Knowledge\\Valaiorp.Knowledge.csproj",
+        "projectUniqueName": "d:\\._repos\\valaiorp\\Knowledge\\Valaiorp.Knowledge.csproj",
         "projectName": "Valaiorp.Knowledge",
-        "projectPath": "D:\\._repos\\valaiorp\\Knowledge\\Valaiorp.Knowledge.csproj",
+        "projectPath": "d:\\._repos\\valaiorp\\Knowledge\\Valaiorp.Knowledge.csproj",
         "packagesPath": "C:\\Users\\findj\\.nuget\\packages\\",
-        "outputPath": "D:\\._repos\\valaiorp\\Knowledge\\obj\\",
+        "outputPath": "d:\\._repos\\valaiorp\\Knowledge\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -373,8 +373,8 @@
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
-              "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj": {
-                "projectPath": "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj"
+              "d:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj": {
+                "projectPath": "d:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj"
               }
             }
           }

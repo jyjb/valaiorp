@@ -14,6 +14,7 @@
           "Valaiorp.Core": "1.0.0",
           "Valaiorp.Execution": "1.0.0",
           "Valaiorp.Knowledge": "1.0.0",
+          "Valaiorp.LlmProviders": "1.0.0",
           "Valaiorp.Logging": "1.0.0",
           "Valaiorp.Memory": "1.0.0",
           "Valaiorp.Observability": "1.0.0",
@@ -100,6 +101,19 @@
         },
         "runtime": {
           "Valaiorp.Knowledge.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "Valaiorp.LlmProviders/1.0.0": {
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.0",
+          "Valaiorp.Configuration": "1.0.0",
+          "Valaiorp.Core": "1.0.0"
+        },
+        "runtime": {
+          "Valaiorp.LlmProviders.dll": {
             "assemblyVersion": "1.0.0.0",
             "fileVersion": "1.0.0.0"
           }
@@ -234,6 +248,11 @@
       "sha512": ""
     },
     "Valaiorp.Knowledge/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Valaiorp.LlmProviders/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

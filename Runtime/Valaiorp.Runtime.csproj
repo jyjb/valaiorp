@@ -18,6 +18,7 @@
     <ProjectReference Include="..\Observability\Valaiorp.Observability.csproj" />
     <ProjectReference Include="..\Retry\Valaiorp.Retry.csproj" />
     <ProjectReference Include="..\Logging\Valaiorp.Logging.csproj" />
+    <ProjectReference Include="..\LlmProviders\Valaiorp.LlmProviders.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />

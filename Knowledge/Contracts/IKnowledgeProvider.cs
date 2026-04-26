@@ -14,5 +14,8 @@ namespace Valaiorp.Knowledge.Contracts
             string query,
             int maxResults,
             CancellationToken ct = default);
+        Task IngestAsync(
+            IEnumerable<string> documents,
+            CancellationToken ct = default);
     }
 }

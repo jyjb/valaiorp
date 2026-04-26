@@ -11,7 +11,9 @@ namespace Valaiorp.Runtime.Configuration
             var options = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true,
-                WriteIndented = true
+                WriteIndented = true,
+                ReadCommentHandling = JsonCommentHandling.Skip,
+                AllowTrailingCommas = true
             };
             return JsonSerializer.Deserialize<AgenticAIConfig>(json, options)
                 ?? throw new InvalidOperationException("Failed to deserialize configuration.");
