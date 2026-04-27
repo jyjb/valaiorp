@@ -1,6 +1,6 @@
 {
   "defaultBaseUrl": "https://generativelanguage.googleapis.com/v1beta/openai/",
-  "endpoint": "/v1/chat/completions",
+  "endpoint": "chat/completions",
   "authHeader": { "name": "Authorization", "value": "Bearer {apiKey}" },
   "fixedHeaders": [],
   "systemPosition": "firstMessage",

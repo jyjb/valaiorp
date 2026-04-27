@@ -55,11 +55,12 @@ namespace Valaiorp.Tools.Enhanced.Registries
 
         public async Task<ToolResult> ExecuteAsync(
             IExecutionContext context,
-            string input,
+            IReadOnlyDictionary<string, object> parameters,
             CancellationToken ct = default)
         {
             try
             {
+                var input = parameters.TryGetValue("input", out var v) ? v?.ToString() ?? string.Empty : string.Empty;
                 var parts = input.Split('|', StringSplitOptions.RemoveEmptyEntries);
                 if (parts.Length < 2)
                     return ToolResult.BadRequest("Invalid input format. Use: log|plan|run|step|<id>");

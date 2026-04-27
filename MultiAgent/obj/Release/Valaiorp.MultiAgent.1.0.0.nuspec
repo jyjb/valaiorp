@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>Valaiorp.MultiAgent</id>
+    <version>1.0.0</version>
+    <authors>Valaiorp.MultiAgent</authors>
+    <description>Package Description</description>
+    <repository type="git" commit="8c6e93e49ecc4d806761ebefdb36ebbefc61a976" />
+    <dependencies>
+      <group targetFramework="net10.0">
+        <dependency id="Valaiorp.Core" version="1.0.0" exclude="Build,Analyzers" />
+        <dependency id="Valaiorp.Execution" version="1.0.0" exclude="Build,Analyzers" />
+        <dependency id="Valaiorp.Memory" version="1.0.0" exclude="Build,Analyzers" />
+        <dependency id="Valaiorp.Policy" version="1.0.0" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="10.0.0" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="D:\._repos\valaiorp\MultiAgent\bin\Release\net10.0\Valaiorp.MultiAgent.dll" target="lib\net10.0\Valaiorp.MultiAgent.dll" />
+  </files>
+</package>

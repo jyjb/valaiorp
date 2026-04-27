@@ -146,11 +146,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "d:\\._repos\\valaiorp\\BasicTools\\Valaiorp.BasicTools.csproj",
+      "projectUniqueName": "D:\\._repos\\valaiorp\\BasicTools\\Valaiorp.BasicTools.csproj",
       "projectName": "Valaiorp.BasicTools",
-      "projectPath": "d:\\._repos\\valaiorp\\BasicTools\\Valaiorp.BasicTools.csproj",
+      "projectPath": "D:\\._repos\\valaiorp\\BasicTools\\Valaiorp.BasicTools.csproj",
       "packagesPath": "C:\\Users\\findj\\.nuget\\packages\\",
-      "outputPath": "d:\\._repos\\valaiorp\\BasicTools\\obj\\",
+      "outputPath": "D:\\._repos\\valaiorp\\BasicTools\\obj\\",
       "projectStyle": "PackageReference",
       "crossTargeting": true,
       "fallbackFolders": [
@@ -174,22 +174,22 @@
         "net10.0": {
           "targetAlias": "net10.0",
           "projectReferences": {
-            "d:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj": {
-              "projectPath": "d:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj"
+            "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj": {
+              "projectPath": "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj"
             },
-            "d:\\._repos\\valaiorp\\Tools\\Valaiorp.Tools.csproj": {
-              "projectPath": "d:\\._repos\\valaiorp\\Tools\\Valaiorp.Tools.csproj"
+            "D:\\._repos\\valaiorp\\Tools\\Valaiorp.Tools.csproj": {
+              "projectPath": "D:\\._repos\\valaiorp\\Tools\\Valaiorp.Tools.csproj"
             }
           }
         },
         "net10.0-windows7.0": {
           "targetAlias": "net10.0-windows",
           "projectReferences": {
-            "d:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj": {
-              "projectPath": "d:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj"
+            "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj": {
+              "projectPath": "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj"
             },
-            "d:\\._repos\\valaiorp\\Tools\\Valaiorp.Tools.csproj": {
-              "projectPath": "d:\\._repos\\valaiorp\\Tools\\Valaiorp.Tools.csproj"
+            "D:\\._repos\\valaiorp\\Tools\\Valaiorp.Tools.csproj": {
+              "projectPath": "D:\\._repos\\valaiorp\\Tools\\Valaiorp.Tools.csproj"
             }
           }
         }

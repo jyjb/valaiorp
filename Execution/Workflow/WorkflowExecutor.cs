@@ -56,7 +56,7 @@ namespace Valaiorp.Execution.Workflow
                     var result = await _toolResolver.ExecuteToolAsync(
                         currentStep.ToolId,
                         context,
-                        currentStep.Input,
+                        new Dictionary<string, object> { ["input"] = currentStep.Input },
                         ct)
                     .ConfigureAwait(false);
 

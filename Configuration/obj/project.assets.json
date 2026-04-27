@@ -59,8 +59,8 @@
         "net10.0": {
           "targetAlias": "net10.0",
           "projectReferences": {
-            "d:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj": {
-              "projectPath": "d:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj"
+            "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj": {
+              "projectPath": "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj"
             }
           }
         }

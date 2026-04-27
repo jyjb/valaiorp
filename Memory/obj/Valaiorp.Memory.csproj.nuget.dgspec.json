@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "d:\\._repos\\valaiorp\\Memory\\Valaiorp.Memory.csproj": {}
+    "D:\\._repos\\valaiorp\\Memory\\Valaiorp.Memory.csproj": {}
   },
   "projects": {
-    "d:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj": {
+    "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "d:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj",
+        "projectUniqueName": "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj",
         "projectName": "Valaiorp.Core",
-        "projectPath": "d:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj",
+        "projectPath": "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj",
         "packagesPath": "C:\\Users\\findj\\.nuget\\packages\\",
-        "outputPath": "d:\\._repos\\valaiorp\\Core\\obj\\",
+        "outputPath": "D:\\._repos\\valaiorp\\Core\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -344,14 +344,14 @@
         }
       }
     },
-    "d:\\._repos\\valaiorp\\Memory\\Valaiorp.Memory.csproj": {
+    "D:\\._repos\\valaiorp\\Memory\\Valaiorp.Memory.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "d:\\._repos\\valaiorp\\Memory\\Valaiorp.Memory.csproj",
+        "projectUniqueName": "D:\\._repos\\valaiorp\\Memory\\Valaiorp.Memory.csproj",
         "projectName": "Valaiorp.Memory",
-        "projectPath": "d:\\._repos\\valaiorp\\Memory\\Valaiorp.Memory.csproj",
+        "projectPath": "D:\\._repos\\valaiorp\\Memory\\Valaiorp.Memory.csproj",
         "packagesPath": "C:\\Users\\findj\\.nuget\\packages\\",
-        "outputPath": "d:\\._repos\\valaiorp\\Memory\\obj\\",
+        "outputPath": "D:\\._repos\\valaiorp\\Memory\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -373,8 +373,8 @@
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
-              "d:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj": {
-                "projectPath": "d:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj"
+              "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj": {
+                "projectPath": "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj"
               }
             }
           }

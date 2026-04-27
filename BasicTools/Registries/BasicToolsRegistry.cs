@@ -15,11 +15,14 @@ namespace Valaiorp.BasicTools.Registries
             // File Tools
             registry.Register(new JsonTool());
             registry.Register(new JsonlTool());
+            registry.Register(new JsoncTool());
             registry.Register(new TxtTool());
             registry.Register(new CsvTool());
             registry.Register(new TsvTool());
             registry.Register(new PsvTool());
             registry.Register(new XmlTool());
+            registry.Register(new ExcelTool());
+            registry.Register(new WordTool());
 
             // Folder Tools
             registry.Register(new FolderTool());

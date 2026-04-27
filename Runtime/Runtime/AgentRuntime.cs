@@ -12,6 +12,8 @@ namespace Valaiorp.Runtime
     using Valaiorp.Observability.Tracing;
     using Valaiorp.Planner.Orchestration;
     using Valaiorp.Policy.Contracts;
+    using Valaiorp.Guardrails.Contracts;
+    using Valaiorp.Guardrails.Enums;
     using Valaiorp.Tools.Enhanced.Logging;
     using Valaiorp.Tools.Resolvers;
 
@@ -24,6 +26,7 @@ namespace Valaiorp.Runtime
         private readonly ToolResolver _toolResolver;
         private readonly TransactionManager _transactionManager;
         private readonly IPolicyEngine _policyEngine;
+        private readonly IGuardrailPipeline _guardrails;
         private readonly IExecutionLogger _executionLogger;
         private readonly AgenticAIConfig _config;
         private readonly IShortTermMemory _shortTermMemory;
@@ -42,6 +45,7 @@ namespace Valaiorp.Runtime
             _toolResolver = serviceProvider.GetRequiredService<ToolResolver>();
             _transactionManager = serviceProvider.GetRequiredService<TransactionManager>();
             _policyEngine = serviceProvider.GetRequiredService<IPolicyEngine>();
+            _guardrails   = serviceProvider.GetRequiredService<IGuardrailPipeline>();
             _executionLogger = serviceProvider.GetRequiredService<IExecutionLogger>();
             _config = serviceProvider.GetRequiredService<AgenticAIConfig>();
             _shortTermMemory = serviceProvider.GetRequiredService<IShortTermMemory>();
@@ -69,6 +73,21 @@ namespace Valaiorp.Runtime
                 enriched.Id,
                 async (_, token) =>
                 {
+                    // Guardrail — input check
+                    var inputContent = enriched.Prompt?.UserPrompt ?? string.Empty;
+                    if (!string.IsNullOrEmpty(inputContent))
+                    {
+                        var gr = await _guardrails
+                            .EvaluateInputAsync(enriched, inputContent, token).ConfigureAwait(false);
+                        if (!gr.IsAllowed)
+                            return new ExecutionResult(enriched.Id, enriched.Id, false,
+                                $"[Guardrail:{gr.GuardrailId}] {gr.Reason}");
+
+                        if (gr.Action == ViolationAction.Redact && gr.SafeContent is not null
+                            && enriched.Prompt is not null)
+                            enriched = ApplyInputRedaction(enriched, gr.SafeContent);
+                    }
+
                     var prePolicyResult = await _policyEngine
                         .EvaluatePreExecutionAsync(enriched, token).ConfigureAwait(false);
                     if (!prePolicyResult.IsAllowed)
@@ -103,6 +122,22 @@ namespace Valaiorp.Runtime
 
                         await _executionLogger.LogRunAsync(unit, enriched, token).ConfigureAwait(false);
 
+                        // Guardrail — output check
+                        var outputContent = execResult.IsSuccess
+                            ? string.Join("; ", unit.Graph.Nodes.Values.Select(n => n.Step.Name))
+                            : execResult.ErrorMessage ?? string.Empty;
+                        if (!string.IsNullOrEmpty(outputContent))
+                        {
+                            var gr = await _guardrails
+                                .EvaluateOutputAsync(enriched, outputContent, token).ConfigureAwait(false);
+                            if (!gr.IsAllowed)
+                            {
+                                await _transactionManager.RollbackAsync(token).ConfigureAwait(false);
+                                return new ExecutionResult(enriched.Id, enriched.Id, false,
+                                    $"[Guardrail:{gr.GuardrailId}] {gr.Reason}");
+                            }
+                        }
+
                         var postPolicyResult = await _policyEngine
                             .EvaluatePostExecutionAsync(execResult, token).ConfigureAwait(false);
                         if (!postPolicyResult.IsAllowed)
@@ -129,6 +164,29 @@ namespace Valaiorp.Runtime
 
             return result;
         }
+
+        // ── Guardrail helpers ─────────────────────────────────────────────────────
+
+        private static IExecutionContext ApplyInputRedaction(IExecutionContext context, string redactedPrompt)
+            => new Core.Contracts.ExecutionContext
+            {
+                Id                = context.Id,
+                SessionId         = context.SessionId,
+                UserId            = context.UserId,
+                ExpiresAt         = context.ExpiresAt,
+                Metadata          = context.Metadata,
+                Steps             = context.Steps,
+                CancellationToken = context.CancellationToken,
+                Prompt = new PromptContext
+                {
+                    SystemPrompt        = context.Prompt!.SystemPrompt,
+                    UserPrompt          = redactedPrompt,
+                    RagContext          = context.Prompt.RagContext,
+                    MemoryContext       = context.Prompt.MemoryContext,
+                    ConversationHistory = context.Prompt.ConversationHistory,
+                    Variables           = context.Prompt.Variables
+                }
+            };
 
         // ── RAG + Memory enrichment ───────────────────────────────────────────────
 

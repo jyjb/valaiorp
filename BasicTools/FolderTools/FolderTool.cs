@@ -3,6 +3,7 @@ namespace Valaiorp.BasicTools.FolderTools
     using Valaiorp.Core.Contracts;
     using Valaiorp.Core.Enums;
     using Valaiorp.Tools.Contracts;
+    using Valaiorp.Tools.Helpers;
 
     public enum FolderAction { Create, Delete, List, Copy, Move, Exists }
 
@@ -10,47 +11,44 @@ namespace Valaiorp.BasicTools.FolderTools
     {
         public string Id => "folder-tool";
         public string Name => "Folder Tool";
-        public string Description => "Folder operations: create, delete, list, copy, move, exists.";
+        public string Description => "Folder operations. Parameters: action (create|delete|list|copy|move|exists), path, destPath (copy/move), recursive (delete), pattern (list).";
         public ToolType Type => ToolType.Native;
         public IReadOnlyDictionary<string, object> Metadata => new Dictionary<string, object>
         {
-            { "SupportedActions", Enum.GetNames(typeof(FolderAction)) },
-            { "InputFormat", "action|path[|destPath|recursive]" }
+            ["SupportedActions"] = Enum.GetNames(typeof(FolderAction))
         };
 
         public async Task<ToolResult> ExecuteAsync(
             IExecutionContext context,
-            string input,
+            IReadOnlyDictionary<string, object> parameters,
             CancellationToken ct = default)
         {
             try
             {
-                var parts = input.Split('|', StringSplitOptions.RemoveEmptyEntries);
-                if (parts.Length < 2)
-                    return ToolResult.BadRequest(new { Message = "Invalid input. Use: create|path, delete|path[|recursive], list|path[|pattern], copy|src|dest, move|src|dest, exists|path" });
+                var actionStr = parameters.GetString("action");
+                if (!Enum.TryParse<FolderAction>(actionStr, true, out var action))
+                    return ToolResult.BadRequest(new { Message = $"Unknown action '{actionStr}'. Use: create, delete, list, copy, move, exists." });
 
-                if (!Enum.TryParse<FolderAction>(parts[0].Trim(), true, out var action))
-                    return ToolResult.BadRequest(new { Message = $"Invalid action: {parts[0].Trim()}" });
+                var path      = parameters.GetString("path");
+                var destPath  = parameters.GetString("destPath");
+                var recursive = parameters.GetBool("recursive");
+                var pattern   = parameters.GetString("pattern", "*");
 
                 return action switch
                 {
-                    FolderAction.Create => Create(parts[1].Trim()),
-                    FolderAction.Delete => Delete(parts[1].Trim(), parts.Length > 2 && parts[2].Trim().Equals("recursive", StringComparison.OrdinalIgnoreCase)),
-                    FolderAction.List   => List(parts[1].Trim(), parts.Length > 2 ? parts[2].Trim() : "*"),
-                    FolderAction.Copy   => await CopyAsync(parts[1].Trim(), parts.Length > 2 ? parts[2].Trim() : null, ct).ConfigureAwait(false),
-                    FolderAction.Move   => Move(parts[1].Trim(), parts.Length > 2 ? parts[2].Trim() : null),
-                    FolderAction.Exists => Exists(parts[1].Trim()),
-                    _                   => ToolResult.BadRequest(new { Message = $"Unsupported action: {action}" })
+                    FolderAction.Create => Create(path),
+                    FolderAction.Delete => Delete(path, recursive),
+                    FolderAction.List   => List(path, pattern),
+                    FolderAction.Copy   => await CopyAsync(path, destPath, ct).ConfigureAwait(false),
+                    FolderAction.Move   => Move(path, destPath),
+                    FolderAction.Exists => Exists(path),
+                    _                  => ToolResult.BadRequest(new { Message = $"Unsupported action: {action}" })
                 };
             }
             catch (Exception ex) { return ToolResult.Error(ex); }
         }
 
-        private static ToolResult Create(string path)
-        {
-            Directory.CreateDirectory(path);
-            return ToolResult.Created(new { Path = path });
-        }
+        private static ToolResult Create(string path) { Directory.CreateDirectory(path); return ToolResult.Created(new { Path = path }); }
 
         private static ToolResult Delete(string path, bool recursive)
         {
@@ -68,31 +66,31 @@ namespace Valaiorp.BasicTools.FolderTools
             return ToolResult.Ok(new { Path = path, Entries = entries, Count = entries.Length });
         }
 
-        private static async Task<ToolResult> CopyAsync(string source, string? dest, CancellationToken ct)
+        private static async Task<ToolResult> CopyAsync(string source, string dest, CancellationToken ct)
         {
-            if (dest == null) return ToolResult.BadRequest(new { Message = "Destination path required: copy|src|dest" });
+            if (string.IsNullOrWhiteSpace(dest)) return ToolResult.BadRequest(new { Message = "'destPath' is required for copy." });
             if (!Directory.Exists(source)) return ToolResult.NotFound(source);
-            await CopyDirectoryAsync(source, dest, ct).ConfigureAwait(false);
+            await CopyDirAsync(source, dest, ct).ConfigureAwait(false);
             return ToolResult.Ok(new { Source = source, Destination = dest });
         }
 
-        private static async Task CopyDirectoryAsync(string source, string dest, CancellationToken ct)
+        private static async Task CopyDirAsync(string src, string dst, CancellationToken ct)
         {
-            Directory.CreateDirectory(dest);
-            foreach (var file in Directory.GetFiles(source))
+            Directory.CreateDirectory(dst);
+            foreach (var file in Directory.GetFiles(src))
             {
                 ct.ThrowIfCancellationRequested();
-                await using var src = File.OpenRead(file);
-                await using var dst = File.Create(Path.Combine(dest, Path.GetFileName(file)));
-                await src.CopyToAsync(dst, ct).ConfigureAwait(false);
+                await using var s = File.OpenRead(file);
+                await using var d = File.Create(Path.Combine(dst, Path.GetFileName(file)));
+                await s.CopyToAsync(d, ct).ConfigureAwait(false);
             }
-            foreach (var dir in Directory.GetDirectories(source))
-                await CopyDirectoryAsync(dir, Path.Combine(dest, Path.GetFileName(dir)), ct).ConfigureAwait(false);
+            foreach (var dir in Directory.GetDirectories(src))
+                await CopyDirAsync(dir, Path.Combine(dst, Path.GetFileName(dir)), ct).ConfigureAwait(false);
         }
 
-        private static ToolResult Move(string source, string? dest)
+        private static ToolResult Move(string source, string dest)
         {
-            if (dest == null) return ToolResult.BadRequest(new { Message = "Destination path required: move|src|dest" });
+            if (string.IsNullOrWhiteSpace(dest)) return ToolResult.BadRequest(new { Message = "'destPath' is required for move." });
             if (!Directory.Exists(source)) return ToolResult.NotFound(source);
             Directory.Move(source, dest);
             return ToolResult.Ok(new { Source = source, Destination = dest });

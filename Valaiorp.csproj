@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>true</IsPackable>
+    <PackageId>Valaiorp</PackageId> 
+    <Version>1.0.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="Configuration\Valaiorp.Configuration.csproj" />
+    <ProjectReference Include="Core\Valaiorp.Core.csproj" />
+    <ProjectReference Include="Memory\Valaiorp.Memory.csproj" />
+    <ProjectReference Include="Tools\Valaiorp.Tools.csproj" />
+    <ProjectReference Include="Knowledge\Valaiorp.Knowledge.csproj" />
+    <ProjectReference Include="Policy\Valaiorp.Policy.csproj" />
+    <ProjectReference Include="Observability\Valaiorp.Observability.csproj" />
+    <ProjectReference Include="Retry\Valaiorp.Retry.csproj" />
+    <ProjectReference Include="Logging\Valaiorp.Logging.csproj" />
+    <ProjectReference Include="MultiAgent\Valaiorp.MultiAgent.csproj" />
+    <ProjectReference Include="Execution\Valaiorp.Execution.csproj" />
+    <ProjectReference Include="Planner\Valaiorp.Planner.csproj" />
+    <ProjectReference Include="BasicTools\Valaiorp.BasicTools.csproj" />
+    <ProjectReference Include="Escalation\Valaiorp.Escalation.csproj" />
+    <ProjectReference Include="LlmProviders\Valaiorp.LlmProviders.csproj" />
+    <ProjectReference Include="Runtime\Valaiorp.Runtime.csproj" />
+    <ProjectReference Include="Modules\Valaiorp.Modules.csproj" />
+  </ItemGroup>
+</Project>

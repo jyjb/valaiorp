@@ -5,6 +5,7 @@ namespace Valaiorp.BasicTools.UITools
     using System.Windows.Automation;
     using Valaiorp.Core.Contracts;
     using Valaiorp.Core.Enums;
+    using Valaiorp.Tools.Helpers;
 
     public abstract class UIAutomationBaseTool : IUIAutomationTool
     {
@@ -16,28 +17,27 @@ namespace Valaiorp.BasicTools.UITools
 
         public async Task<ToolResult> ExecuteAsync(
             IExecutionContext context,
-            string input,
+            IReadOnlyDictionary<string, object> parameters,
             CancellationToken ct = default)
         {
             try
             {
-                var parts = input.Split('|', StringSplitOptions.RemoveEmptyEntries);
-                if (parts.Length < 2)
-                    return ToolResult.BadRequest(new { Message = "Invalid input format. Use: action|parameter1|parameter2..." });
-
-                var actionStr = parts[0].Trim();
+                var actionStr = parameters.GetString("action");
                 if (!Enum.TryParse<UIAutomationAction>(actionStr, true, out var action))
-                    return ToolResult.BadRequest(new { Message = $"Invalid action: {actionStr}" });
+                    return ToolResult.BadRequest(new { Message = $"Unknown action '{actionStr}'." });
+
+                var element = parameters.GetString("element");
+                var value   = parameters.GetString("value");
 
                 var result = action switch
                 {
-                    UIAutomationAction.FindWindow      => await FindWindowAsync(parts[1], ct).ConfigureAwait(false),
-                    UIAutomationAction.ClickText       => await ClickAsync(parts[1], null, ct).ConfigureAwait(false),
-                    UIAutomationAction.ClickButton     => await ClickAsync(parts[1], null, ct).ConfigureAwait(false),
-                    UIAutomationAction.ClickElement    => await ClickAsync(parts[1], parts.Length > 2 ? parts[2] : null, ct).ConfigureAwait(false),
-                    UIAutomationAction.GetText         => await GetTextAsync(parts[1], ct).ConfigureAwait(false),
-                    UIAutomationAction.SetText         => await SetTextAsync(parts[1], parts[2], ct).ConfigureAwait(false),
-                    UIAutomationAction.GetTableContent => await GetTableContentAsync(parts[1], ct).ConfigureAwait(false),
+                    UIAutomationAction.FindWindow      => await FindWindowAsync(element, ct).ConfigureAwait(false),
+                    UIAutomationAction.ClickText       => await ClickAsync(element, null, ct).ConfigureAwait(false),
+                    UIAutomationAction.ClickButton     => await ClickAsync(element, null, ct).ConfigureAwait(false),
+                    UIAutomationAction.ClickElement    => await ClickAsync(element, parameters.GetString("automationId"), ct).ConfigureAwait(false),
+                    UIAutomationAction.GetText         => await GetTextAsync(element, ct).ConfigureAwait(false),
+                    UIAutomationAction.SetText         => await SetTextAsync(element, value, ct).ConfigureAwait(false),
+                    UIAutomationAction.GetTableContent => await GetTableContentAsync(element, ct).ConfigureAwait(false),
                     _ => throw new InvalidOperationException($"Unsupported action: {actionStr}")
                 };
 
@@ -87,7 +87,6 @@ namespace Valaiorp.BasicTools.UITools
             await Task.Yield();
             var element = GetRootElement().FindFirst(TreeScope.Descendants,
                 new PropertyCondition(AutomationElement.NameProperty, elementName));
-
             if (element != null)
             {
                 var vp = element.GetCurrentPattern(ValuePattern.Pattern) as ValuePattern;
@@ -115,7 +114,6 @@ namespace Valaiorp.BasicTools.UITools
                 foreach (AutomationElement cell in cells) rowData.Add(cell.Current.Name);
                 tableData.Add(rowData);
             }
-
             return System.Text.Json.JsonSerializer.Serialize(tableData);
         }
     }

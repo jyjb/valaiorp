@@ -47,5 +47,11 @@
   <Folder Name="/MultiAgent/">
     <Project Path="MultiAgent/Valaiorp.MultiAgent.csproj" />
   </Folder>
+  <Folder Name="/Modules/">
+    <Project Path="Modules/Valaiorp.Modules.csproj" />
+  </Folder>
+  <Folder Name="/Guardrails/">
+    <Project Path="Guardrails/Valaiorp.Guardrails.csproj" />
+  </Folder>
 
 </Solution>

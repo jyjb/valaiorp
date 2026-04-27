@@ -21,9 +21,14 @@ namespace Valaiorp.Runtime.DependencyInjection
     using Valaiorp.LlmProviders.DependencyInjection;
     using Valaiorp.Retry.DependencyInjection;
     using Valaiorp.Tools.Contracts;
+    using Valaiorp.Modules;
     using Valaiorp.Tools.Enhanced.Logging;
     using Valaiorp.Tools.Registries;
     using Valaiorp.Tools.Resolvers;
+    using Valaiorp.Guardrails.BuiltIn;
+    using Valaiorp.Guardrails.Contracts;
+    using Valaiorp.Guardrails.Enums;
+    using Valaiorp.Guardrails.Pipeline;
 
     public static class ServiceCollectionExtensions
     {
@@ -34,7 +39,11 @@ namespace Valaiorp.Runtime.DependencyInjection
             // Core tool registries
             services.AddSingleton<ToolRegistry>();
             services.AddSingleton<ModuleRegistry>();
-            services.AddSingleton<ToolResolver>();
+            services.AddSingleton<ToolResolver>(sp => new ToolResolver(
+                sp.GetRequiredService<ToolRegistry>(),
+                sp.GetRequiredService<ModuleRegistry>(),
+                module => new ModuleTool(module)));
+            services.AddSingleton<ModuleExecutor>();
 
             // Memory
             services.AddSingleton<IShortTermMemory, InMemoryShortTermMemory>();
@@ -94,6 +103,36 @@ namespace Valaiorp.Runtime.DependencyInjection
                     sp.GetRequiredService<Valaiorp.Retry.Contracts.IRetryStrategy>(),
                     config.Parallelism.MaxDegreeOfParallelism));
             services.AddSingleton<TransactionManager>();
+
+            // Guardrails
+            services.AddSingleton<IGuardrailPipeline>(_ =>
+            {
+                var gc = config.Guardrails;
+                var pipeline = new GuardrailPipeline();
+
+                if (gc.EnablePiiRedaction)
+                    pipeline.Add(new PiiGuardrail());
+
+                if (gc.EnablePromptInjectionDetection)
+                    pipeline.Add(new PromptInjectionGuardrail());
+
+                if (gc.EnableBannedKeywords && gc.BannedKeywords?.Length > 0)
+                    pipeline.Add(new BannedKeywordsGuardrail(gc.BannedKeywords));
+
+                if (gc.MaxInputLengthChars > 0)
+                    pipeline.Add(new ContentLengthGuardrail(GuardrailScope.Input, gc.MaxInputLengthChars));
+
+                if (gc.MaxOutputLengthChars > 0)
+                    pipeline.Add(new ContentLengthGuardrail(GuardrailScope.Output, gc.MaxOutputLengthChars));
+
+                if (gc.AllowedToolIds?.Length > 0 || gc.DeniedToolIds?.Length > 0)
+                    pipeline.Add(new ToolScopeGuardrail(gc.AllowedToolIds, gc.DeniedToolIds));
+
+                if (gc.EnableDataClassification)
+                    pipeline.Add(new DataClassificationGuardrail());
+
+                return pipeline;
+            });
 
             // Policy
             services.AddSingleton<IPolicyEngine, PolicyEngine>();

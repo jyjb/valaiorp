@@ -8,6 +8,7 @@ namespace Valaiorp.BasicTools.BrowserTools
     using Valaiorp.Core.Contracts;
     using Valaiorp.Core.Enums;
     using Valaiorp.Tools.Contracts;
+    using Valaiorp.Tools.Helpers;
 
     public sealed class PlaywrightUIAutomationTool : ITool, IAsyncDisposable
     {
@@ -18,12 +19,12 @@ namespace Valaiorp.BasicTools.BrowserTools
 
         public string Id => "playwright-ui-automation";
         public string Name => "Playwright UI Automation";
-        public string Description => "Browser automation via Microsoft Playwright (Chromium, Firefox, WebKit).";
+        public string Description => "Browser automation via Microsoft Playwright. Parameters: action (FindWindow|Navigate|ClickText|ClickButton|ClickElement|GetText|SetText|GetTableContent), element, value (SetText only), url (Navigate only).";
         public ToolType Type => ToolType.External;
         public IReadOnlyDictionary<string, object> Metadata => new Dictionary<string, object>
         {
-            { "Platform", "Cross-platform" },
-            { "SupportedActions", new[] { "FindWindow", "Navigate", "ClickText", "ClickButton", "ClickElement", "GetText", "SetText", "GetTableContent" } }
+            ["Platform"] = "Cross-platform",
+            ["SupportedActions"] = new[] { "FindWindow", "Navigate", "ClickText", "ClickButton", "ClickElement", "GetText", "SetText", "GetTableContent" }
         };
 
         public async Task InitializeAsync(CancellationToken ct = default)
@@ -36,31 +37,30 @@ namespace Valaiorp.BasicTools.BrowserTools
 
         public async Task<ToolResult> ExecuteAsync(
             IExecutionContext context,
-            string input,
+            IReadOnlyDictionary<string, object> parameters,
             CancellationToken ct = default)
         {
             if (_page == null) await InitializeAsync(ct).ConfigureAwait(false);
-
             try
             {
-                var parts = input.Split('|', StringSplitOptions.RemoveEmptyEntries);
-                if (parts.Length < 2)
-                    return ToolResult.BadRequest(new { Message = "Invalid input format. Use: action|parameter1|parameter2..." });
-
-                var actionStr = parts[0].Trim();
+                var actionStr = parameters.GetString("action");
                 if (!Enum.TryParse<BrowserAction>(actionStr, true, out var action))
-                    return ToolResult.BadRequest(new { Message = $"Invalid action: {actionStr}" });
+                    return ToolResult.BadRequest(new { Message = $"Unknown action '{actionStr}'." });
+
+                var element = parameters.GetString("element");
+                var value   = parameters.GetString("value");
+                var url     = parameters.GetString("url");
 
                 var result = action switch
                 {
-                    BrowserAction.FindWindow      => await FindWindowAsync(parts[1], ct).ConfigureAwait(false),
-                    BrowserAction.Navigate        => await NavigateAsync(parts[1]).ConfigureAwait(false),
-                    BrowserAction.ClickText       => await ClickAsync(parts[1], null, ct).ConfigureAwait(false),
-                    BrowserAction.ClickButton     => await ClickAsync(parts[1], null, ct).ConfigureAwait(false),
-                    BrowserAction.ClickElement    => await ClickAsync(parts[1], parts.Length > 2 ? parts[2] : null, ct).ConfigureAwait(false),
-                    BrowserAction.GetText         => await GetTextAsync(parts[1], ct).ConfigureAwait(false),
-                    BrowserAction.SetText         => await SetTextAsync(parts[1], parts[2], ct).ConfigureAwait(false),
-                    BrowserAction.GetTableContent => await GetTableContentAsync(parts[1], ct).ConfigureAwait(false),
+                    BrowserAction.FindWindow      => await FindWindowAsync(element, ct).ConfigureAwait(false),
+                    BrowserAction.Navigate        => await NavigateAsync(url).ConfigureAwait(false),
+                    BrowserAction.ClickText       => await ClickAsync(element, null, ct).ConfigureAwait(false),
+                    BrowserAction.ClickButton     => await ClickAsync(element, null, ct).ConfigureAwait(false),
+                    BrowserAction.ClickElement    => await ClickAsync(element, parameters.GetString("automationId"), ct).ConfigureAwait(false),
+                    BrowserAction.GetText         => await GetTextAsync(element, ct).ConfigureAwait(false),
+                    BrowserAction.SetText         => await SetTextAsync(element, value, ct).ConfigureAwait(false),
+                    BrowserAction.GetTableContent => await GetTableContentAsync(element, ct).ConfigureAwait(false),
                     _ => throw new InvalidOperationException($"Unsupported action: {actionStr}")
                 };
 
@@ -82,7 +82,7 @@ namespace Valaiorp.BasicTools.BrowserTools
             ct.ThrowIfCancellationRequested();
             try
             {
-                if (automationId != null)
+                if (!string.IsNullOrWhiteSpace(automationId))
                     await _page!.GetByTestId(automationId).ClickAsync().ConfigureAwait(false);
                 else
                     await _page!.GetByText(elementName).ClickAsync().ConfigureAwait(false);
@@ -94,22 +94,14 @@ namespace Valaiorp.BasicTools.BrowserTools
         public async Task<string> GetTextAsync(string elementName, CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
-            try
-            {
-                var text = await _page!.GetByText(elementName).TextContentAsync().ConfigureAwait(false);
-                return text ?? "Not Found";
-            }
+            try { return await _page!.GetByText(elementName).TextContentAsync().ConfigureAwait(false) ?? "Not Found"; }
             catch { return $"Element not found: {elementName}"; }
         }
 
         public async Task<string> SetTextAsync(string elementName, string text, CancellationToken ct = default)
         {
             ct.ThrowIfCancellationRequested();
-            try
-            {
-                await _page!.GetByPlaceholder(elementName).FillAsync(text).ConfigureAwait(false);
-                return $"Text set on: {elementName}";
-            }
+            try { await _page!.GetByPlaceholder(elementName).FillAsync(text).ConfigureAwait(false); return $"Text set on: {elementName}"; }
             catch { return $"Element not found or not settable: {elementName}"; }
         }
 
@@ -150,14 +142,7 @@ namespace Valaiorp.BasicTools.BrowserTools
 
     public enum BrowserAction
     {
-        FindWindow,
-        Navigate,
-        ClickText,
-        ClickButton,
-        ClickElement,
-        GetText,
-        SetText,
-        GetTableContent
+        FindWindow, Navigate, ClickText, ClickButton, ClickElement, GetText, SetText, GetTableContent
     }
 }
 

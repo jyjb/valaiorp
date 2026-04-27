@@ -269,11 +269,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "d:\\._repos\\valaiorp\\MultiAgent\\Valaiorp.MultiAgent.csproj",
+      "projectUniqueName": "D:\\._repos\\valaiorp\\MultiAgent\\Valaiorp.MultiAgent.csproj",
       "projectName": "Valaiorp.MultiAgent",
-      "projectPath": "d:\\._repos\\valaiorp\\MultiAgent\\Valaiorp.MultiAgent.csproj",
+      "projectPath": "D:\\._repos\\valaiorp\\MultiAgent\\Valaiorp.MultiAgent.csproj",
       "packagesPath": "C:\\Users\\findj\\.nuget\\packages\\",
-      "outputPath": "d:\\._repos\\valaiorp\\MultiAgent\\obj\\",
+      "outputPath": "D:\\._repos\\valaiorp\\MultiAgent\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -295,17 +295,17 @@
         "net10.0": {
           "targetAlias": "net10.0",
           "projectReferences": {
-            "d:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj": {
-              "projectPath": "d:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj"
+            "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj": {
+              "projectPath": "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj"
             },
-            "d:\\._repos\\valaiorp\\Execution\\Valaiorp.Execution.csproj": {
-              "projectPath": "d:\\._repos\\valaiorp\\Execution\\Valaiorp.Execution.csproj"
+            "D:\\._repos\\valaiorp\\Execution\\Valaiorp.Execution.csproj": {
+              "projectPath": "D:\\._repos\\valaiorp\\Execution\\Valaiorp.Execution.csproj"
             },
-            "d:\\._repos\\valaiorp\\Memory\\Valaiorp.Memory.csproj": {
-              "projectPath": "d:\\._repos\\valaiorp\\Memory\\Valaiorp.Memory.csproj"
+            "D:\\._repos\\valaiorp\\Memory\\Valaiorp.Memory.csproj": {
+              "projectPath": "D:\\._repos\\valaiorp\\Memory\\Valaiorp.Memory.csproj"
             },
-            "d:\\._repos\\valaiorp\\Policy\\Valaiorp.Policy.csproj": {
-              "projectPath": "d:\\._repos\\valaiorp\\Policy\\Valaiorp.Policy.csproj"
+            "D:\\._repos\\valaiorp\\Policy\\Valaiorp.Policy.csproj": {
+              "projectPath": "D:\\._repos\\valaiorp\\Policy\\Valaiorp.Policy.csproj"
             }
           }
         }

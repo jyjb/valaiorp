@@ -1,0 +1,87 @@
+{
+  "$schema": "./plan.schema.json",
+  "determinism": "deterministic",
+  "steps": [
+
+    {
+      "name": "ReadConfig",
+      "description": "Read the API endpoint from a JSON config file.",
+      "toolId": "json-tool",
+      "mode": "sequential",
+      "priority": 0,
+      "inputs": {
+        "operation": "read",
+        "filePath": "C:\\BotConfig\\config.json"
+      }
+    },
+
+    {
+      "name": "FetchOrders",
+      "description": "Call the orders API using the endpoint from ReadConfig.",
+      "toolId": "api-tool",
+      "mode": "sequential",
+      "inputs": {
+        "method": "GET",
+        "url": "${ReadConfig.Results.endpoint}",
+        "headers": "{\"Authorization\": \"Bearer ${ReadConfig.Results.apiKey}\"}"
+      }
+    },
+
+    {
+      "name": "SapLogin",
+      "description": "Log in to SAP using the sap-login module.",
+      "toolId": "sap-login",
+      "mode": "sequential",
+      "inputs": {
+        "server":   "Z003",
+        "username": "svc_bot",
+        "password": "{{SAP_PASS}}"
+      }
+    },
+
+    {
+      "name": "PostInvoices",
+      "description": "Post each order as an invoice in SAP.",
+      "toolId": "sap-post",
+      "mode": "sequential",
+      "inputs": {
+        "data":       "${FetchOrders.Results.body}",
+        "costCenter": "CC-100"
+      }
+    },
+
+    {
+      "name": "ExportReport",
+      "description": "Write posting results to an Excel report.",
+      "toolId": "excel-tool",
+      "mode": "sequential",
+      "inputs": {
+        "operation": "write",
+        "filePath":  "C:\\Reports\\postings.xlsx",
+        "data":      "${PostInvoices.Results.rows}"
+      }
+    },
+
+    {
+      "name": "EmailReport",
+      "description": "POST the report path to the notification service.",
+      "toolId": "api-tool",
+      "mode": "sequential",
+      "inputs": {
+        "method": "POST",
+        "url":    "https://notify.internal/api/send",
+        "body":   "{\"to\": \"finance@company.com\", \"attachment\": \"${ExportReport.Results.filePath}\"}",
+        "headers": "{\"Content-Type\": \"application/json\"}"
+      }
+    },
+
+    {
+      "name": "SapLogout",
+      "description": "Log out of SAP.",
+      "toolId": "sap-logout",
+      "mode": "sequential",
+      "inputs": {}
+    }
+
+  ]
+}

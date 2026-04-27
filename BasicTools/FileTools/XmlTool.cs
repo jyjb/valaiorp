@@ -3,42 +3,42 @@ namespace Valaiorp.BasicTools.FileTools
     using System.Xml;
     using Valaiorp.Core.Contracts;
     using Valaiorp.Core.Enums;
+    using Valaiorp.Tools.Helpers;
 
     public sealed class XmlTool : IFileTool
     {
         public string Id => "xml-tool";
         public string Name => "XML Tool";
-        public string Description => "Reads and writes XML files.";
+        public string Description => "Reads and writes XML files. Parameters: operation (read|write), filePath, content (write only).";
         public ToolType Type => ToolType.Native;
         public IReadOnlyDictionary<string, object> Metadata => new Dictionary<string, object>
         {
-            { "SupportedExtensions", new[] { ".xml" } }
+            ["SupportedExtensions"] = new[] { ".xml" }
         };
 
         public async Task<ToolResult> ExecuteAsync(
             IExecutionContext context,
-            string input,
+            IReadOnlyDictionary<string, object> parameters,
             CancellationToken ct = default)
         {
             try
             {
-                var parts = input.Split('|', StringSplitOptions.RemoveEmptyEntries);
-                if (parts.Length < 2)
-                    return ToolResult.BadRequest(new { Message = "Invalid input format. Use: read|filePath or write|filePath|content" });
+                var operation = parameters.GetString("operation", "read");
+                var filePath  = parameters.GetString("filePath");
 
-                var operation = parts[0].Trim().ToLower();
-                var filePath  = parts[1].Trim();
+                if (string.IsNullOrWhiteSpace(filePath))
+                    return ToolResult.BadRequest(new { Message = "Parameter 'filePath' is required." });
 
                 if (operation == "read")
                     return ToolResult.Ok(new { Content = await ReadAsync(filePath, ct).ConfigureAwait(false) });
 
-                if (operation == "write" && parts.Length >= 3)
+                if (operation == "write")
                 {
-                    await WriteAsync(filePath, parts[2].Trim(), ct).ConfigureAwait(false);
+                    await WriteAsync(filePath, parameters.GetString("content"), ct).ConfigureAwait(false);
                     return ToolResult.Ok();
                 }
 
-                return ToolResult.BadRequest(new { Message = "Invalid operation or input format." });
+                return ToolResult.BadRequest(new { Message = $"Unknown operation '{operation}'. Use: read, write." });
             }
             catch (Exception ex) { return ToolResult.Error(ex); }
         }

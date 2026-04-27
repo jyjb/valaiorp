@@ -36,3 +36,9 @@ D:\._repos\valaiorp\Runtime\obj\Release\net10.0\Valaiorp.Runtime.dll
 D:\._repos\valaiorp\Runtime\obj\Release\net10.0\refint\Valaiorp.Runtime.dll
 D:\._repos\valaiorp\Runtime\obj\Release\net10.0\Valaiorp.Runtime.pdb
 D:\._repos\valaiorp\Runtime\obj\Release\net10.0\ref\Valaiorp.Runtime.dll
+D:\._repos\valaiorp\Runtime\bin\Release\net10.0\Valaiorp.LlmProviders.dll
+D:\._repos\valaiorp\Runtime\bin\Release\net10.0\Valaiorp.LlmProviders.pdb
+D:\._repos\valaiorp\Runtime\bin\Release\net10.0\Valaiorp.Modules.dll
+D:\._repos\valaiorp\Runtime\bin\Release\net10.0\Valaiorp.Modules.pdb
+D:\._repos\valaiorp\Runtime\bin\Release\net10.0\Valaiorp.Guardrails.dll
+D:\._repos\valaiorp\Runtime\bin\Release\net10.0\Valaiorp.Guardrails.pdb

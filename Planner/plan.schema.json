@@ -1,0 +1,98 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://valaiorp/plan.schema.json",
+  "title": "Valaiorp Plan",
+  "description": "A Valaiorp execution plan — a sequence of steps each mapped to a tool or module.",
+  "type": "object",
+  "required": ["steps"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Auto-generated plan ID. Leave blank — runtime sets this.",
+      "readOnly": true
+    },
+    "contextId": {
+      "type": "string",
+      "description": "Execution context ID. Set automatically by ManualPlanner at runtime."
+    },
+    "determinism": {
+      "type": "string",
+      "description": "How deterministic this plan is.",
+      "enum": ["deterministic", "semiDeterministic", "nonDeterministic"],
+      "default": "deterministic"
+    },
+    "steps": {
+      "type": "array",
+      "description": "Ordered list of execution steps.",
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/PlanStep" }
+    }
+  },
+
+  "definitions": {
+    "PlanStep": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Auto-generated step ID. Leave blank.",
+          "readOnly": true
+        },
+        "name": {
+          "type": "string",
+          "description": "Unique step name within this plan. Used for variable binding references (${StepName.Results.Field}).",
+          "example": "ReadConfig"
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of what this step does."
+        },
+        "toolId": {
+          "type": "string",
+          "description": "ID of the tool or module to execute. Must match a registered tool/module ID.",
+          "example": "json-tool"
+        },
+        "moduleId": {
+          "type": "string",
+          "description": "ID of the module this step belongs to (informational only — use toolId to invoke a module)."
+        },
+        "agentId": {
+          "type": "string",
+          "description": "Target agent ID for multi-agent delegation. When set, the step is dispatched as an AgentMessage instead of executing a local tool."
+        },
+        "mode": {
+          "type": "string",
+          "description": "Execution mode for this step.",
+          "enum": ["sequential", "parallel", "hybrid"],
+          "default": "sequential"
+        },
+        "priority": {
+          "type": "integer",
+          "description": "Execution priority (higher = earlier in parallel batches).",
+          "default": 0
+        },
+        "inputs": {
+          "type": "object",
+          "description": "Key-value parameters passed to the tool. Values can be strings, numbers, booleans, arrays, or ${StepName.Results.Field} references.",
+          "additionalProperties": true,
+          "example": {
+            "operation": "read",
+            "filePath": "C:\\Data\\config.json"
+          }
+        },
+        "subSteps": {
+          "type": "array",
+          "description": "Nested steps for hierarchical plans.",
+          "items": { "$ref": "#/definitions/PlanStep" },
+          "default": []
+        },
+        "metadata": {
+          "type": "object",
+          "description": "Arbitrary metadata for tooling, logging, or UI display.",
+          "additionalProperties": true
+        }
+      }
+    }
+  }
+}

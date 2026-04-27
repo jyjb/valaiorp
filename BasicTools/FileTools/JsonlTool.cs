@@ -3,42 +3,42 @@ namespace Valaiorp.BasicTools.FileTools
     using System.Text.Json;
     using Valaiorp.Core.Contracts;
     using Valaiorp.Core.Enums;
+    using Valaiorp.Tools.Helpers;
 
     public sealed class JsonlTool : IFileTool
     {
         public string Id => "jsonl-tool";
         public string Name => "JSONL Tool";
-        public string Description => "Reads and writes JSON Lines files.";
+        public string Description => "Reads and writes JSON Lines files. Parameters: operation (read|write), filePath, content (write only).";
         public ToolType Type => ToolType.Native;
         public IReadOnlyDictionary<string, object> Metadata => new Dictionary<string, object>
         {
-            { "SupportedExtensions", new[] { ".jsonl" } }
+            ["SupportedExtensions"] = new[] { ".jsonl" }
         };
 
         public async Task<ToolResult> ExecuteAsync(
             IExecutionContext context,
-            string input,
+            IReadOnlyDictionary<string, object> parameters,
             CancellationToken ct = default)
         {
             try
             {
-                var parts = input.Split('|', StringSplitOptions.RemoveEmptyEntries);
-                if (parts.Length < 2)
-                    return ToolResult.BadRequest(new { Message = "Invalid input format. Use: read|filePath or write|filePath|content" });
+                var operation = parameters.GetString("operation", "read");
+                var filePath  = parameters.GetString("filePath");
 
-                var operation = parts[0].Trim().ToLower();
-                var filePath  = parts[1].Trim();
+                if (string.IsNullOrWhiteSpace(filePath))
+                    return ToolResult.BadRequest(new { Message = "Parameter 'filePath' is required." });
 
                 if (operation == "read")
                     return ToolResult.Ok(new { Content = await ReadAsync(filePath, ct).ConfigureAwait(false) });
 
-                if (operation == "write" && parts.Length >= 3)
+                if (operation == "write")
                 {
-                    await WriteAsync(filePath, parts[2].Trim(), ct).ConfigureAwait(false);
+                    await WriteAsync(filePath, parameters.GetString("content"), ct).ConfigureAwait(false);
                     return ToolResult.Ok();
                 }
 
-                return ToolResult.BadRequest(new { Message = "Invalid operation or input format." });
+                return ToolResult.BadRequest(new { Message = $"Unknown operation '{operation}'. Use: read, write." });
             }
             catch (Exception ex) { return ToolResult.Error(ex); }
         }
@@ -47,20 +47,20 @@ namespace Valaiorp.BasicTools.FileTools
         {
             if (!File.Exists(filePath)) throw new FileNotFoundException($"File not found: {filePath}");
             var lines = await File.ReadAllLinesAsync(filePath, ct).ConfigureAwait(false);
-            foreach (var line in lines)
+            foreach (var line in lines.Where(l => !string.IsNullOrWhiteSpace(l)))
             {
                 try { JsonDocument.Parse(line); }
-                catch (JsonException ex) { throw new InvalidDataException($"Line is not valid JSON: {line}", ex); }
+                catch (JsonException ex) { throw new InvalidDataException($"Invalid JSON line: {line}", ex); }
             }
             return string.Join(Environment.NewLine, lines);
         }
 
         public async Task WriteAsync(string filePath, string content, CancellationToken ct = default)
         {
-            foreach (var line in content.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries))
+            foreach (var line in content.Split(new[] { Environment.NewLine, "\n" }, StringSplitOptions.RemoveEmptyEntries))
             {
                 try { JsonDocument.Parse(line); }
-                catch (JsonException ex) { throw new InvalidDataException($"Line is not valid JSON: {line}", ex); }
+                catch (JsonException ex) { throw new InvalidDataException($"Invalid JSON line: {line}", ex); }
             }
             await File.WriteAllTextAsync(filePath, content, ct).ConfigureAwait(false);
         }

@@ -10,6 +10,6 @@ namespace Valaiorp.Tools.Contracts
         string Description { get; }
         ToolType Type { get; }
         IReadOnlyDictionary<string, object> Metadata { get; }
-        Task<ToolResult> ExecuteAsync(IExecutionContext context, string input, CancellationToken ct = default);
+        Task<ToolResult> ExecuteAsync(IExecutionContext context, IReadOnlyDictionary<string, object> parameters, CancellationToken ct = default);
     }
 }

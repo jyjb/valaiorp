@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>Valaiorp.Core</id>
+    <version>1.0.0</version>
+    <authors>Valaiorp.Core</authors>
+    <description>Package Description</description>
+    <repository type="git" commit="8c6e93e49ecc4d806761ebefdb36ebbefc61a976" />
+    <dependencies>
+      <group targetFramework="net10.0" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="D:\._repos\valaiorp\Core\bin\Release\net10.0\Valaiorp.Core.dll" target="lib\net10.0\Valaiorp.Core.dll" />
+  </files>
+</package>

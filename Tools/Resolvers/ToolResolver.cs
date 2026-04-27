@@ -1,6 +1,5 @@
 namespace Valaiorp.Tools.Resolvers
 {
-    using System.Text.Json;
     using Valaiorp.Core.Contracts;
     using Valaiorp.Tools.Contracts;
     using Valaiorp.Tools.Registries;
@@ -9,23 +8,34 @@ namespace Valaiorp.Tools.Resolvers
     {
         private readonly ToolRegistry _toolRegistry;
         private readonly ModuleRegistry _moduleRegistry;
+        private readonly Func<IModule, ITool> _moduleToolFactory;
 
-        public ToolResolver(ToolRegistry toolRegistry, ModuleRegistry moduleRegistry)
+        public ToolResolver(
+            ToolRegistry toolRegistry,
+            ModuleRegistry moduleRegistry,
+            Func<IModule, ITool>? moduleToolFactory = null)
         {
             _toolRegistry = toolRegistry;
             _moduleRegistry = moduleRegistry;
+            _moduleToolFactory = moduleToolFactory ?? (m => m.Tools.First());
         }
 
         public ITool? ResolveTool(string toolId)
         {
+            // 1. Direct tool match
             if (_toolRegistry.TryGetTool(toolId, out var tool))
                 return tool;
 
-            foreach (var module in _moduleRegistry.Modules.Values)
+            // 2. Module callable as a unit
+            if (_moduleRegistry.TryGetModule(toolId, out var module) && module is not null)
+                return _moduleToolFactory(module);
+
+            // 3. Individual tool nested inside a module
+            foreach (var m in _moduleRegistry.Modules.Values)
             {
-                var moduleTool = module.Tools.FirstOrDefault(t => t.Id == toolId);
-                if (moduleTool != null)
-                    return moduleTool;
+                var nested = m.Tools.FirstOrDefault(t => t.Id == toolId);
+                if (nested != null)
+                    return nested;
             }
 
             return null;
@@ -34,14 +44,14 @@ namespace Valaiorp.Tools.Resolvers
         public async Task<IExecutionResult> ExecuteToolAsync(
             string toolId,
             IExecutionContext context,
-            string input,
+            IReadOnlyDictionary<string, object> parameters,
             CancellationToken ct = default)
         {
             var tool = ResolveTool(toolId)
-                ?? throw new InvalidOperationException($"Tool with ID '{toolId}' not found.");
+                ?? throw new InvalidOperationException($"Tool '{toolId}' not found.");
 
-            var toolResult = await tool.ExecuteAsync(context, input, ct).ConfigureAwait(false);
-            var annotated = toolResult with { StepId = toolId };
+            var toolResult = await tool.ExecuteAsync(context, parameters, ct).ConfigureAwait(false);
+            var annotated  = toolResult with { StepId = toolId };
 
             var outputs = new Dictionary<string, object>
             {
@@ -54,7 +64,7 @@ namespace Valaiorp.Tools.Resolvers
 
             var errorMessage = annotated.IsSuccess ? null
                 : annotated.Errors is string s ? s
-                : annotated.Errors != null ? JsonSerializer.Serialize(annotated.Errors) : null;
+                : annotated.Errors != null ? System.Text.Json.JsonSerializer.Serialize(annotated.Errors) : null;
 
             return new ExecutionResult(toolId, context.Id, annotated.IsSuccess, errorMessage, null, outputs);
         }

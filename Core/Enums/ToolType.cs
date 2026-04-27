@@ -5,6 +5,7 @@ namespace Valaiorp.Core.Enums
         None,
         Native,
         External,
-        Custom
+        Custom,
+        Module
     }
 }

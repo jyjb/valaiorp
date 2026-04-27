@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "VUEb/dPrL+M=",
+  "dgSpecHash": "NVXeUW8+WXk=",
   "success": true,
-  "projectFilePath": "d:\\._repos\\valaiorp\\LlmProviders\\Valaiorp.LlmProviders.csproj",
+  "projectFilePath": "D:\\._repos\\valaiorp\\LlmProviders\\Valaiorp.LlmProviders.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\findj\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\10.0.0\\microsoft.extensions.dependencyinjection.abstractions.10.0.0.nupkg.sha512"
   ],

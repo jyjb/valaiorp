@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Valaiorp.Observability")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e07c4626e848a210a12ca9729e4aafe80dd3d640")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8c6e93e49ecc4d806761ebefdb36ebbefc61a976")]
 [assembly: System.Reflection.AssemblyProductAttribute("Valaiorp.Observability")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Valaiorp.Observability")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
