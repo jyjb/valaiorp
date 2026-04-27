@@ -50,6 +50,7 @@ namespace Valaiorp.Execution.Executors
 
                             node.Result = result;
                             node.Status = result.IsSuccess ? TaskStatus.Completed : TaskStatus.Failed;
+                            ApplyLlmTokensFromOutputs(node, result.Outputs);
                             return result;
                         }
                         return new ExecutionResult(node.Id, unit.Context.Id, true);
@@ -138,5 +139,32 @@ namespace Valaiorp.Execution.Executors
 
             return WalkOutputs(dict, rest);
         }
+
+        // Convention: tools that call an LLM internally include _llmInputTokens / _llmOutputTokens
+        // in their output dict. This method lifts those values onto the TaskNode for logging.
+        private static void ApplyLlmTokensFromOutputs(TaskNode node, IDictionary<string, object> outputs)
+        {
+            var hasInput  = outputs.TryGetValue("_llmInputTokens",  out var rawIn);
+            var hasOutput = outputs.TryGetValue("_llmOutputTokens", out var rawOut);
+            if (!hasInput && !hasOutput) return;
+
+            outputs.TryGetValue("_llmModelId", out var rawModel);
+
+            node.AiUsed = true;
+            node.LlmTokens = new TokenUsage
+            {
+                InputTokens  = ToInt(rawIn),
+                OutputTokens = ToInt(rawOut),
+                ModelId      = rawModel as string
+            };
+        }
+
+        private static int ToInt(object? value) => value switch
+        {
+            int i                                                     => i,
+            long l                                                    => (int)l,
+            System.Text.Json.JsonElement { ValueKind: System.Text.Json.JsonValueKind.Number } je => je.GetInt32(),
+            _                                                         => 0
+        };
     }
 }

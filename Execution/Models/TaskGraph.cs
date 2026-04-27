@@ -81,6 +81,8 @@ namespace Valaiorp.Execution.Models
         public TaskStatus Status { get; set; } = TaskStatus.Pending;
         public Exception? Exception { get; set; }
         public IExecutionResult? Result { get; set; }
+        public bool AiUsed { get; set; }
+        public TokenUsage? LlmTokens { get; set; }
 
         public TaskNode(PlanStep step)
         {

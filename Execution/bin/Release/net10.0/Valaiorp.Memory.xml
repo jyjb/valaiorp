@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Valaiorp.Memory</name>
+    </assembly>
+    <members>
+        <member name="T:Valaiorp.Memory.Contracts.IConversationMemory">
+            <summary>
+            Cross-agent conversation memory keyed by ConversationId.
+            Shared across all agents participating in the same conversation turn.
+            </summary>
+        </member>
+        <member name="M:Valaiorp.Memory.Contracts.IConversationMemory.GetRecentHistoryAsync(System.String,System.Int32,System.Threading.CancellationToken)">
+            <summary>Returns the last <paramref name="maxTurns"/> turns for context window management.</summary>
+        </member>
+    </members>
+</doc>

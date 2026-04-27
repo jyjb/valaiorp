@@ -1,0 +1,152 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Valaiorp.Configuration</name>
+    </assembly>
+    <members>
+        <member name="P:Valaiorp.Configuration.Config.AgenticAIConfig.WorkflowType">
+            <summary>The type of workflow: Irpa, AiWorkflow, AiAgent, or Agentic.</summary>
+        </member>
+        <member name="P:Valaiorp.Configuration.Config.AgenticAIConfig.AiParticipation">
+            <summary>How much the AI is allowed to act. Ignored for Irpa workflows.</summary>
+        </member>
+        <member name="M:Valaiorp.Configuration.Config.AgenticAIConfig.ApplyProfile">
+            <summary>
+            Applies WorkflowType + AiParticipation presets, filling Planner.Type and Autonomy
+            with the right values for the chosen workflow profile.
+            Manual overrides set after this call take precedence.
+            </summary>
+        </member>
+        <member name="T:Valaiorp.Configuration.Loader.ValaiorpConfigurationLoader">
+             <summary>
+             Loads <c>valaiorp.json</c> from disk, or writes a fully-annotated template
+             if no file is found, so users can discover all options without reading source code.
+            
+             Usage:
+               var config = ValaiorpConfigurationLoader.LoadOrCreate();          // auto-finds / auto-creates
+               var config = ValaiorpConfigurationLoader.Load("path/to/file.json"); // explicit path
+               ValaiorpConfigurationLoader.WriteTemplate("valaiorp.json");        // generate template only
+             </summary>
+        </member>
+        <member name="M:Valaiorp.Configuration.Loader.ValaiorpConfigurationLoader.LoadOrCreate(System.String)">
+            <summary>
+            Searches for <c>valaiorp.json</c> in the current directory, then the application
+            base directory. If not found, writes a template to the current directory and
+            returns framework defaults so the application can still start.
+            </summary>
+        </member>
+        <member name="M:Valaiorp.Configuration.Loader.ValaiorpConfigurationLoader.Load(System.String)">
+            <summary>Loads and deserialises an existing config file (JSONC comments supported).</summary>
+        </member>
+        <member name="M:Valaiorp.Configuration.Loader.ValaiorpConfigurationLoader.WriteTemplate(System.String)">
+            <summary>
+            Writes a fully-annotated JSONC template with every option and its allowed values
+            to <paramref name="filePath"/>. Overwrites existing file.
+            </summary>
+        </member>
+        <member name="M:Valaiorp.Configuration.Loader.ValaiorpConfigurationLoader.FindConfigFile(System.String)">
+            <summary>
+            Searches known locations for <c>valaiorp.json</c>.
+            Returns the first path that exists, or null.
+            </summary>
+        </member>
+        <member name="P:Valaiorp.Configuration.Models.GuardrailConfig.EnablePiiRedaction">
+            <summary>Detect and redact PII (email, phone, SSN, credit card, IP) from all content.</summary>
+        </member>
+        <member name="P:Valaiorp.Configuration.Models.GuardrailConfig.EnablePromptInjectionDetection">
+            <summary>Block prompt injection attempts in user inputs.</summary>
+        </member>
+        <member name="P:Valaiorp.Configuration.Models.GuardrailConfig.EnableBannedKeywords">
+            <summary>Block content containing any of the BannedKeywords entries.</summary>
+        </member>
+        <member name="P:Valaiorp.Configuration.Models.GuardrailConfig.MaxInputLengthChars">
+            <summary>Block input content exceeding this character count. 0 = disabled.</summary>
+        </member>
+        <member name="P:Valaiorp.Configuration.Models.GuardrailConfig.MaxOutputLengthChars">
+            <summary>Block output content exceeding this character count. 0 = disabled.</summary>
+        </member>
+        <member name="P:Valaiorp.Configuration.Models.GuardrailConfig.AllowedToolIds">
+            <summary>
+            When set, only these tool IDs may be invoked.
+            Null means all tools are allowed (subject to DeniedToolIds).
+            </summary>
+        </member>
+        <member name="P:Valaiorp.Configuration.Models.GuardrailConfig.DeniedToolIds">
+            <summary>Tool IDs that are always blocked, regardless of AllowedToolIds.</summary>
+        </member>
+        <member name="P:Valaiorp.Configuration.Models.GuardrailConfig.EnableDataClassification">
+            <summary>Tag content with a data-sensitivity classification and emit audit warnings.</summary>
+        </member>
+        <member name="P:Valaiorp.Configuration.Models.KnowledgeConfig.EmbeddingProvider">
+            <summary>Provider for embedding generation (e.g. "openai", "anthropic", "ollama", "custom").</summary>
+        </member>
+        <member name="P:Valaiorp.Configuration.Models.KnowledgeConfig.EmbeddingModel">
+            <summary>Embedding model ID as the provider names it (e.g. "text-embedding-3-small").</summary>
+        </member>
+        <member name="P:Valaiorp.Configuration.Models.LlmConfig.Provider">
+            <summary>Provider identifier: "anthropic" | "openai" | "ollama" | "custom".</summary>
+        </member>
+        <member name="P:Valaiorp.Configuration.Models.LlmConfig.ModelId">
+            <summary>Model ID as the provider names it (e.g. "claude-sonnet-4-6", "gpt-4o").</summary>
+        </member>
+        <member name="P:Valaiorp.Configuration.Models.LlmConfig.ApiKey">
+            <summary>
+            API key. Leave empty to resolve from the environment variable named in ApiKeyEnvVar.
+            </summary>
+        </member>
+        <member name="P:Valaiorp.Configuration.Models.LlmConfig.ApiKeyEnvVar">
+            <summary>
+            Environment variable that holds the API key (default: "{PROVIDER}_API_KEY").
+            Used when ApiKey is null or empty.
+            </summary>
+        </member>
+        <member name="P:Valaiorp.Configuration.Models.LlmConfig.ApiKeyFile">
+            <summary>
+            Path to a local file whose first non-empty line is the API key.
+            Useful for Docker secrets mounts or CI artifact drops.
+            Used when ApiKey and ApiKeyEnvVar are both unset.
+            </summary>
+        </member>
+        <member name="P:Valaiorp.Configuration.Models.LlmConfig.BaseUrl">
+            <summary>Base URL override (useful for Ollama or proxied endpoints).</summary>
+        </member>
+        <member name="P:Valaiorp.Configuration.Models.LlmConfig.SystemPromptTemplate">
+            <summary>Default system prompt template. Supports {variables} substitution.</summary>
+        </member>
+        <member name="P:Valaiorp.Configuration.Models.LlmConfig.RequestTimeout">
+            <summary>HTTP request timeout for LLM calls.</summary>
+        </member>
+        <member name="M:Valaiorp.Configuration.Models.LlmConfig.ResolveApiKey">
+            <summary>
+            Resolves the API key synchronously: literal → env var → file.
+            For async vault providers use IApiKeyProvider / AddLlmClient(config, provider).
+            </summary>
+        </member>
+        <member name="P:Valaiorp.Configuration.Models.PersistenceConfig.LogDirectory">
+            <summary>Directory for JSONL execution logs. Always written to regardless of SQL config.</summary>
+        </member>
+        <member name="P:Valaiorp.Configuration.Models.PersistenceConfig.QueueDirectory">
+            <summary>Directory for JSONL queue files. Used by the default JsonlWorkQueue.</summary>
+        </member>
+        <member name="P:Valaiorp.Configuration.Models.PersistenceConfig.ConnectionString">
+            <summary>
+            Optional SQL connection string. When set, host app should call
+            services.AddSqlPersistence(factory) to also log and queue via SQL.
+            Leave empty to run entirely file-backed (the default).
+            </summary>
+        </member>
+        <member name="T:Valaiorp.Configuration.Models.WorkflowProfile">
+            <summary>
+            Maps (WorkflowType, AiParticipation) to concrete planner and autonomy settings.
+            Call AgenticAIConfig.ApplyProfile() to apply these presets automatically.
+            </summary>
+        </member>
+        <member name="T:Valaiorp.Configuration.Providers.DefaultApiKeyProvider">
+            <summary>
+            Resolution order: ApiKey (literal) → ApiKeyEnvVar (environment variable)
+            → ApiKeyFile (path to a file whose first line is the key).
+            Falls back to the conventional "{PROVIDER}_API_KEY" env var if no env var name is set.
+            </summary>
+        </member>
+    </members>
+</doc>

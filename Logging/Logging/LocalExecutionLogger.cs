@@ -24,6 +24,14 @@ namespace Valaiorp.Tools.Enhanced.Logging
                 ContextId = context.Id,
                 PlanId = plan.Id,
                 Timestamp = DateTimeOffset.UtcNow,
+                AiUsed = plan.PlanningTokens != null,
+                PlanningTokens = plan.PlanningTokens != null ? new
+                {
+                    plan.PlanningTokens.InputTokens,
+                    plan.PlanningTokens.OutputTokens,
+                    plan.PlanningTokens.TotalTokens,
+                    plan.PlanningTokens.ModelId
+                } : null,
                 Steps = plan.Steps.Select(s => new
                 {
                     s.Id,
@@ -69,6 +77,14 @@ namespace Valaiorp.Tools.Enhanced.Logging
                 StepName = node.Step.Name,
                 Timestamp = DateTimeOffset.UtcNow,
                 Status = node.Status.ToString(),
+                AiUsed = node.AiUsed,
+                LlmTokens = node.LlmTokens != null ? new
+                {
+                    node.LlmTokens.InputTokens,
+                    node.LlmTokens.OutputTokens,
+                    node.LlmTokens.TotalTokens,
+                    node.LlmTokens.ModelId
+                } : null,
                 Error = node.Exception?.Message,
                 Result = node.Result != null ? new
                 {

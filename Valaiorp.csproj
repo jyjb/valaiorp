@@ -2,27 +2,53 @@
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <IsPackable>true</IsPackable>
-    <PackageId>Valaiorp</PackageId> 
+    <PackageId>Valaiorp</PackageId>
     <Version>1.0.0</Version>
+    <Authors>Jey</Authors>
+    <Description>Valaiorp — production-grade Workflow and Agentic AI Execution Framework for .NET 10. Supports IRPA, AI Workflow, AI Agent, and fully Agentic modes with multi-bot/multi-machine work queues, built-in guardrails, policy enforcement, retry, escalation, and pluggable LLM providers.</Description>
+    <PackageTags>ai;agent;agentic;llm;workflow;irpa;rpa;bot;queue;framework;net10;dotnet</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <NoWarn>$(NoWarn);CS0436;CS8632</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="Configuration\Valaiorp.Configuration.csproj" />
-    <ProjectReference Include="Core\Valaiorp.Core.csproj" />
-    <ProjectReference Include="Memory\Valaiorp.Memory.csproj" />
-    <ProjectReference Include="Tools\Valaiorp.Tools.csproj" />
-    <ProjectReference Include="Knowledge\Valaiorp.Knowledge.csproj" />
-    <ProjectReference Include="Policy\Valaiorp.Policy.csproj" />
-    <ProjectReference Include="Observability\Valaiorp.Observability.csproj" />
-    <ProjectReference Include="Retry\Valaiorp.Retry.csproj" />
-    <ProjectReference Include="Logging\Valaiorp.Logging.csproj" />
-    <ProjectReference Include="MultiAgent\Valaiorp.MultiAgent.csproj" />
-    <ProjectReference Include="Execution\Valaiorp.Execution.csproj" />
-    <ProjectReference Include="Planner\Valaiorp.Planner.csproj" />
-    <ProjectReference Include="BasicTools\Valaiorp.BasicTools.csproj" />
-    <ProjectReference Include="Escalation\Valaiorp.Escalation.csproj" />
-    <ProjectReference Include="LlmProviders\Valaiorp.LlmProviders.csproj" />
-    <ProjectReference Include="Runtime\Valaiorp.Runtime.csproj" />
-    <ProjectReference Include="Modules\Valaiorp.Modules.csproj" />
+    <None Include="README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="Configuration\Valaiorp.Configuration.csproj" PrivateAssets="all" />
+    <ProjectReference Include="Core\Valaiorp.Core.csproj" PrivateAssets="all" />
+    <ProjectReference Include="Memory\Valaiorp.Memory.csproj" PrivateAssets="all" />
+    <ProjectReference Include="Tools\Valaiorp.Tools.csproj" PrivateAssets="all" />
+    <ProjectReference Include="Knowledge\Valaiorp.Knowledge.csproj" PrivateAssets="all" />
+    <ProjectReference Include="Policy\Valaiorp.Policy.csproj" PrivateAssets="all" />
+    <ProjectReference Include="Observability\Valaiorp.Observability.csproj" PrivateAssets="all" />
+    <ProjectReference Include="Retry\Valaiorp.Retry.csproj" PrivateAssets="all" />
+    <ProjectReference Include="Logging\Valaiorp.Logging.csproj" PrivateAssets="all" />
+    <ProjectReference Include="MultiAgent\Valaiorp.MultiAgent.csproj" PrivateAssets="all" />
+    <ProjectReference Include="Execution\Valaiorp.Execution.csproj" PrivateAssets="all" />
+    <ProjectReference Include="Planner\Valaiorp.Planner.csproj" PrivateAssets="all" />
+    <ProjectReference Include="BasicTools\Valaiorp.BasicTools.csproj" PrivateAssets="all" />
+    <ProjectReference Include="Escalation\Valaiorp.Escalation.csproj" PrivateAssets="all" />
+    <ProjectReference Include="LlmProviders\Valaiorp.LlmProviders.csproj" PrivateAssets="all" />
+    <ProjectReference Include="Runtime\Valaiorp.Runtime.csproj" PrivateAssets="all" />
+    <ProjectReference Include="Modules\Valaiorp.Modules.csproj" PrivateAssets="all" />
+  </ItemGroup>
+
+  <Target Name="AddSubProjectDllsToPackage" BeforeTargets="_GetPackageFiles">
+    <ItemGroup>
+      <None Include="%(ProjectReference.RootDir)%(ProjectReference.Directory)bin\$(Configuration)\$(TargetFramework)\%(ProjectReference.Filename).dll"
+            Pack="true"
+            PackagePath="lib/$(TargetFramework)/"
+            Visible="false" />
+      <None Include="%(ProjectReference.RootDir)%(ProjectReference.Directory)bin\$(Configuration)\$(TargetFramework)\%(ProjectReference.Filename).xml"
+            Pack="true"
+            PackagePath="lib/$(TargetFramework)/"
+            Visible="false"
+            Condition="Exists('%(ProjectReference.RootDir)%(ProjectReference.Directory)bin\$(Configuration)\$(TargetFramework)\%(ProjectReference.Filename).xml')" />
+    </ItemGroup>
+  </Target>
 </Project>

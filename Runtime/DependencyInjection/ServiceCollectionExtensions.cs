@@ -93,8 +93,11 @@ namespace Valaiorp.Runtime.DependencyInjection
             // Retry
             services.AddRetryModule();
 
-            // Logging
-            services.AddSingleton<IExecutionLogger, LocalExecutionLogger>();
+            // Logging — ExternalExecutionLogger (JSONL) is mandatory and always registered.
+            // Call services.AddSqlPersistence(factory) after this to also log to SQL,
+            // which will replace the registration with a CompositeExecutionLogger.
+            services.AddSingleton<IExecutionLogger>(
+                _ => new ExternalExecutionLogger(config.Persistence.LogDirectory));
 
             // Execution
             services.AddSingleton<ParallelExecutor>(sp =>
@@ -155,6 +158,42 @@ namespace Valaiorp.Runtime.DependencyInjection
 
             // Runtime
             services.AddSingleton<AgentRuntime>();
+
+            return services;
+        }
+
+        /// <summary>
+        /// Adds SQL-backed execution logging alongside the mandatory local JSONL logger.
+        /// The <paramref name="connectionFactory"/> should return a new, unopened DbConnection
+        /// each time it is called (one per log write).
+        ///
+        /// Call this after AddAgenticAIRuntime:
+        ///   services.AddAgenticAIRuntime(config)
+        ///           .AddSqlPersistence(() => new SqlConnection(connStr));
+        ///
+        /// At app startup also call:
+        ///   await sp.GetRequiredService&lt;SqlExecutionLogger&gt;().CreateSchemaAsync();
+        /// </summary>
+        public static IServiceCollection AddSqlPersistence(
+            this IServiceCollection services,
+            Func<System.Data.Common.DbConnection> connectionFactory)
+        {
+            // Wrap the existing local logger with a composite that also writes to SQL
+            var existing = services.LastOrDefault(d => d.ServiceType == typeof(IExecutionLogger));
+
+            services.AddSingleton<Valaiorp.Runtime.Logging.SqlExecutionLogger>(
+                _ => new Valaiorp.Runtime.Logging.InlineSqlExecutionLogger(connectionFactory));
+
+            services.AddSingleton<IExecutionLogger>(sp =>
+            {
+                var local = existing?.ImplementationFactory != null
+                    ? (IExecutionLogger)existing.ImplementationFactory(sp)
+                    : existing?.ImplementationInstance as IExecutionLogger
+                      ?? sp.GetRequiredService<Valaiorp.Runtime.Logging.SqlExecutionLogger>();
+
+                var sql = sp.GetRequiredService<Valaiorp.Runtime.Logging.SqlExecutionLogger>();
+                return new Valaiorp.Tools.Enhanced.Logging.CompositeExecutionLogger([local, sql]);
+            });
 
             return services;
         }

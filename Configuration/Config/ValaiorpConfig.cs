@@ -23,6 +23,7 @@ namespace Valaiorp.Configuration.Config
         public GovernanceConfig  Governance  { get; set; } = new();
         public AutonomyConfig    Autonomy    { get; set; } = new();
         public GuardrailConfig   Guardrails  { get; set; } = new();
+        public PersistenceConfig Persistence { get; set; } = new();
 
         /// <summary>
         /// Applies WorkflowType + AiParticipation presets, filling Planner.Type and Autonomy

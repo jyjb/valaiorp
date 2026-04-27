@@ -48,9 +48,10 @@ namespace Valaiorp.Planner.Planners
 
             return new Plan
             {
-                ContextId   = plan.ContextId,
-                Steps       = [.. plan.Steps, dynamic],
-                Determinism = plan.Determinism
+                ContextId      = plan.ContextId,
+                Steps          = [.. plan.Steps, dynamic],
+                Determinism    = plan.Determinism,
+                PlanningTokens = plan.PlanningTokens
             };
         }
     }

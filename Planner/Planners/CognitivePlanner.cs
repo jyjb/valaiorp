@@ -26,23 +26,30 @@ namespace Valaiorp.Planner.Planners
 
         public override async Task<Plan> CreatePlanAsync(IExecutionContext context, CancellationToken ct = default)
         {
-            // Pass 1 — initial plan
+            // Pass 1 — initial plan (tokens captured by base)
             var initialPlan = await base.CreatePlanAsync(context, ct).ConfigureAwait(false);
             if (initialPlan.Steps.Count == 0)
                 return initialPlan;
+
+            var accumulated = initialPlan.PlanningTokens ?? new TokenUsage();
 
             // Pass 2 — critique
             var critiquePrompt = BuildCritiquePrompt(context, initialPlan);
             var critiqueResponse = await _llmClient.CompleteAsync(critiquePrompt, ct).ConfigureAwait(false);
             if (!critiqueResponse.IsSuccess)
                 return initialPlan;
+            accumulated += TokenUsage.From(critiqueResponse);
 
             // Pass 3 — revised plan
             var revisionPrompt = BuildRevisionPrompt(context, initialPlan, critiqueResponse.Content);
             var revisionResponse = await _llmClient.CompleteAsync(revisionPrompt, ct).ConfigureAwait(false);
-            return revisionResponse.IsSuccess
+            var finalPlan = revisionResponse.IsSuccess
                 ? ParsePlan(context, revisionResponse.Content)
                 : initialPlan;
+
+            accumulated += TokenUsage.From(revisionResponse);
+            finalPlan.PlanningTokens = accumulated;
+            return finalPlan;
         }
 
         // ── Critique prompt ──────────────────────────────────────────────────────

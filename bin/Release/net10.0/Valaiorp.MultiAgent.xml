@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Valaiorp.MultiAgent</name>
+    </assembly>
+    <members>
+        <member name="M:Valaiorp.MultiAgent.Contracts.IAgentRegistry.GetByCapability(System.String)">
+            <summary>Returns agents whose Capabilities list contains the given tool ID.</summary>
+        </member>
+        <member name="M:Valaiorp.MultiAgent.DependencyInjection.MultiAgentServiceCollectionExtensions.AddMultiAgentRuntime(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Int32)">
+            <summary>
+            Registers multi-agent services: IAgentRegistry, IConversationMemory, MultiAgentOrchestrator.
+            Call this after AddAgenticAIRuntime().
+            </summary>
+        </member>
+        <member name="T:Valaiorp.MultiAgent.Orchestration.MultiAgentOrchestrator">
+             <summary>
+             Drives a multi-agent conversation.
+            
+             Flow:
+               1. Route the initial AgentMessage to the orchestrator agent.
+               2. Orchestrator produces an AgentResult; if it contains DelegatedMessages,
+                  dispatch each to the named sub-agent.
+               3. Sub-agent results are stored in IConversationMemory and fed back to the
+                  orchestrator as a synthesis turn.
+               4. Repeat until the orchestrator returns no further delegations (task complete).
+             </summary>
+        </member>
+        <member name="P:Valaiorp.MultiAgent.Orchestration.MultiAgentOrchestrator.MaxRounds">
+            <summary>Maximum delegation rounds before forcibly stopping (prevents infinite loops).</summary>
+        </member>
+    </members>
+</doc>

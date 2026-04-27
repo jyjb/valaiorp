@@ -82,7 +82,7 @@ namespace Valaiorp.Runtime.Bootstrap
         {
             var effectiveConfig = (config ?? RuntimeConfigLoader.LoadDefault()).ApplyProfile();
             var runtime         = Build(effectiveConfig, configureServices, configureModules);
-            var effectiveQueue  = queue ?? new InMemoryWorkQueue();
+            var effectiveQueue  = queue ?? new JsonlWorkQueue(effectiveConfig.Persistence.QueueDirectory);
 
             var effectiveFactory = contextFactory ?? (item => new ExecutionContext
             {

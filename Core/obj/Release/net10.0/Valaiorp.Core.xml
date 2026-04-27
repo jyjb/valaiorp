@@ -1,0 +1,194 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Valaiorp.Core</name>
+    </assembly>
+    <members>
+        <member name="P:Valaiorp.Core.Contracts.AgentMessage.FromAgentId">
+            <summary>Sender agent ID. Null when the message originates from the user / system.</summary>
+        </member>
+        <member name="P:Valaiorp.Core.Contracts.AgentMessage.ToAgentId">
+            <summary>Target agent ID. Null routes to the default orchestrator.</summary>
+        </member>
+        <member name="P:Valaiorp.Core.Contracts.AgentMessage.Payload">
+            <summary>Arbitrary data passed between agents (tool results, structured outputs).</summary>
+        </member>
+        <member name="P:Valaiorp.Core.Contracts.AgentResult.DelegatedMessages">
+            <summary>Messages this agent wants the orchestrator to dispatch to other agents.</summary>
+        </member>
+        <member name="T:Valaiorp.Core.Contracts.ExecutionContext">
+            <summary>
+            Default mutable implementation of IExecutionContext. Use this directly or subclass it.
+            </summary>
+        </member>
+        <member name="P:Valaiorp.Core.Contracts.IAgent.Capabilities">
+            <summary>Tool IDs this agent is permitted to use.</summary>
+        </member>
+        <member name="T:Valaiorp.Core.Contracts.IApiKeyProvider">
+            <summary>
+            Resolves API keys from any credential store — env vars, files, vaults, config, etc.
+            Implement this interface to plug in Azure Key Vault, AWS Secrets Manager,
+            HashiCorp Vault, or any other credential backend.
+            </summary>
+        </member>
+        <member name="M:Valaiorp.Core.Contracts.IApiKeyProvider.GetApiKeyAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Returns the secret value for the given logical key name, or null if not found.
+            </summary>
+            <param name="keyName">
+            The logical name identifying this secret (e.g. "ANTHROPIC_API_KEY").
+            How this maps to a vault path or secret ID is up to the implementation.
+            </param>
+        </member>
+        <member name="T:Valaiorp.Core.Contracts.IBotContext">
+            <summary>Identity and runtime metadata for a single BotWorker instance.</summary>
+        </member>
+        <member name="P:Valaiorp.Core.Contracts.IBotContext.BotId">
+            <summary>Logical bot name — shared across all instances of the same bot type.</summary>
+        </member>
+        <member name="P:Valaiorp.Core.Contracts.IBotContext.InstanceId">
+            <summary>Unique ID for this specific process instance.</summary>
+        </member>
+        <member name="P:Valaiorp.Core.Contracts.IExecutionContext.Prompt">
+            <summary>AI prompt inputs: system/user prompts, RAG context, memory, conversation history.</summary>
+        </member>
+        <member name="T:Valaiorp.Core.Contracts.ILlmClient">
+            <summary>
+            Provider-agnostic LLM interface. Implement this in a separate provider project
+            (e.g. Valaiorp.LlmProviders) using HttpClient + System.Text.Json — no SDK deps required.
+            </summary>
+        </member>
+        <member name="P:Valaiorp.Core.Contracts.ILlmClient.ClientId">
+            <summary>Unique identifier for this client / provider (e.g. "anthropic-claude-sonnet-4-6").</summary>
+        </member>
+        <member name="M:Valaiorp.Core.Contracts.ILlmClient.CompleteAsync(Valaiorp.Core.Contracts.PromptContext,System.Threading.CancellationToken)">
+            <summary>Sends a prompt and returns the full completion.</summary>
+        </member>
+        <member name="T:Valaiorp.Core.Contracts.IWorkQueue">
+             <summary>
+             Enterprise work queue abstraction. Implementations:
+               InMemoryWorkQueue  — single-process, dev/test
+               JsonlWorkQueue     — JSONL file, single local bot
+               SqlWorkQueue       — SQL table, single or multi-bot, multi-machine
+            
+             All bots sharing the same IWorkQueue instance (or same SQL table) form a
+             bot pool — they compete for items from the same queue automatically.
+             </summary>
+        </member>
+        <member name="M:Valaiorp.Core.Contracts.IWorkQueue.StartRunAsync(System.String,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Registers a bot session start against a queue.
+            Returns the RunId that must be passed to EndRunAsync.
+            </summary>
+        </member>
+        <member name="M:Valaiorp.Core.Contracts.IWorkQueue.EndRunAsync(System.String,System.Threading.CancellationToken)">
+            <summary>Marks a bot session as ended and records the timestamp.</summary>
+        </member>
+        <member name="M:Valaiorp.Core.Contracts.IWorkQueue.PopulateAsync(System.String,System.Collections.Generic.IEnumerable{Valaiorp.Core.Contracts.IWorkItem},System.Threading.CancellationToken)">
+            <summary>
+            Bulk-adds work items to a queue. Items must have QueueId set.
+            Existing items with the same Reference are skipped (idempotent).
+            </summary>
+        </member>
+        <member name="M:Valaiorp.Core.Contracts.IWorkQueue.EnqueueAsync(Valaiorp.Core.Contracts.IWorkItem,System.Threading.CancellationToken)">
+            <summary>Adds a single work item to a queue.</summary>
+        </member>
+        <member name="M:Valaiorp.Core.Contracts.IWorkQueue.AssignQueueToBotAsync(System.String,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Pre-assigns all pending items in a queue to a specific bot.
+            Items already assigned to another bot are not touched.
+            Use when you want a dedicated bot per queue rather than free competition.
+            </summary>
+        </member>
+        <member name="M:Valaiorp.Core.Contracts.IWorkQueue.GetNextItemAsync(System.String,System.String,System.String,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Fetches and locks the next available item.
+            Filters: queueId (required), tag, reference, botId (assigned-to).
+            Returns null when no matching item is available.
+            </summary>
+        </member>
+        <member name="M:Valaiorp.Core.Contracts.IWorkQueue.MarkCompletedAsync(System.String,System.Collections.Generic.IDictionary{System.String,System.Object},System.Threading.CancellationToken)">
+            <summary>Marks a work item as successfully completed.</summary>
+        </member>
+        <member name="M:Valaiorp.Core.Contracts.IWorkQueue.MarkFailedAsync(System.String,System.String,System.String,System.String,System.Int32,System.Threading.CancellationToken)">
+            <summary>
+            Marks a work item as failed.
+            If AttemptCount &lt; maxAttempts the item is re-queued for retry.
+            If AttemptCount >= maxAttempts it is moved to DeadLetter.
+            </summary>
+        </member>
+        <member name="M:Valaiorp.Core.Contracts.IWorkQueue.GetReportAsync(System.String,System.Threading.CancellationToken)">
+            <summary>Returns a full status and statistics report for a queue.</summary>
+        </member>
+        <member name="P:Valaiorp.Core.Contracts.PromptContext.SystemPrompt">
+            <summary>Static persona / role instructions sent as the system turn.</summary>
+        </member>
+        <member name="P:Valaiorp.Core.Contracts.PromptContext.UserPrompt">
+            <summary>The runtime task or question from the user / calling agent.</summary>
+        </member>
+        <member name="P:Valaiorp.Core.Contracts.PromptContext.RagContext">
+            <summary>Chunks retrieved from a knowledge provider (RAG).</summary>
+        </member>
+        <member name="P:Valaiorp.Core.Contracts.PromptContext.MemoryContext">
+            <summary>Retrieved entries from short/long-term memory.</summary>
+        </member>
+        <member name="P:Valaiorp.Core.Contracts.PromptContext.ConversationHistory">
+            <summary>Prior conversation turns for multi-turn sessions.</summary>
+        </member>
+        <member name="P:Valaiorp.Core.Contracts.PromptContext.Variables">
+            <summary>Named variables substituted into prompt templates (e.g. {AgentName}).</summary>
+        </member>
+        <member name="T:Valaiorp.Core.Contracts.QueueRun">
+            <summary>Tracks a single bot session against a queue (start → end).</summary>
+        </member>
+        <member name="T:Valaiorp.Core.Enums.AiParticipation">
+            <summary>
+            Controls how much the AI is allowed to act within an AI Workflow, AI Agent, or Agentic workflow.
+            Has no effect on IRPA workflows (AI is never invoked).
+            </summary>
+        </member>
+        <member name="F:Valaiorp.Core.Enums.AiParticipation.ObserveOnly">
+            <summary>AI reads context and produces insights/logs — no execution decisions made.</summary>
+        </member>
+        <member name="F:Valaiorp.Core.Enums.AiParticipation.ObserveAndSuggest">
+            <summary>AI proposes next steps; a human or approval gate must confirm before execution.</summary>
+        </member>
+        <member name="F:Valaiorp.Core.Enums.AiParticipation.ObserveAndReact">
+            <summary>AI observes and acts autonomously — executes its decisions without approval.</summary>
+        </member>
+        <member name="F:Valaiorp.Core.Enums.PlannerType.Reactive">
+            <summary>Rule-based reactive planner — responds to context signals, no LLM.</summary>
+        </member>
+        <member name="F:Valaiorp.Core.Enums.PlannerType.Deliberative">
+            <summary>Code-authored fixed plan — fully deterministic, no LLM. Used for IRPA.</summary>
+        </member>
+        <member name="F:Valaiorp.Core.Enums.PlannerType.Hierarchical">
+            <summary>Hierarchical task decomposition — no LLM, driven by registered modules.</summary>
+        </member>
+        <member name="F:Valaiorp.Core.Enums.PlannerType.LlmBased">
+            <summary>LLM generates and optionally revises the plan. Used for AI Workflow and AI Agent.</summary>
+        </member>
+        <member name="F:Valaiorp.Core.Enums.PlannerType.AutonomyAware">
+            <summary>LLM with full autonomy — dynamic re-planning, tool selection, sub-agent spawning. Used for Agentic.</summary>
+        </member>
+        <member name="F:Valaiorp.Core.Enums.PlannerType.Manual">
+            <summary>
+            Externally supplied JSON plan — no planner runs at all.
+            The Plan JSON is deserialized directly and executed as-is.
+            Useful for developer testing, plan replay, and LLM-generated plans passed in from outside the runtime.
+            </summary>
+        </member>
+        <member name="F:Valaiorp.Core.Enums.WorkflowType.Irpa">
+            <summary>Pure automation, no AI. Tools/modules run a fixed, code-authored plan.</summary>
+        </member>
+        <member name="F:Valaiorp.Core.Enums.WorkflowType.AiWorkflow">
+            <summary>AI produces the execution plan; steps run deterministically after planning.</summary>
+        </member>
+        <member name="F:Valaiorp.Core.Enums.WorkflowType.AiAgent">
+            <summary>AI plans and re-plans between steps based on intermediate results.</summary>
+        </member>
+        <member name="F:Valaiorp.Core.Enums.WorkflowType.Agentic">
+            <summary>Fully autonomous AI — dynamic tool selection, self-directed re-planning, sub-agent spawning.</summary>
+        </member>
+    </members>
+</doc>

@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Valaiorp.Planner</name>
+    </assembly>
+    <members>
+        <member name="P:Valaiorp.Planner.Models.PlanStep.AgentId">
+            <summary>
+            Target agent ID for multi-agent delegation.
+            When set, the MultiAgentOrchestrator dispatches this step as an AgentMessage
+            to the named agent instead of executing it with a local tool.
+            </summary>
+        </member>
+        <member name="T:Valaiorp.Planner.Planners.AutonomyAwarePlanner">
+            <summary>
+            Wraps any IPlanner and applies autonomy-level gating before returning the plan.
+            Set context.Metadata["autonomy.allowDynamicPlanning"] = true to enable dynamic step injection.
+            </summary>
+        </member>
+        <member name="T:Valaiorp.Planner.Planners.CognitivePlanner">
+            <summary>
+            Deliberative planner that runs three LLM passes: initial plan → self-critique → revision.
+            Produces higher-quality plans at the cost of 2-3x more LLM calls.
+            Inherits prompt construction and JSON parsing from LlmPlanner.
+            </summary>
+        </member>
+        <member name="T:Valaiorp.Planner.Planners.LlmPlanner">
+            <summary>
+            LLM-driven planner. Injects tool descriptions + RAG/memory context into the prompt,
+            calls ILlmClient, and parses the JSON plan response.
+            Subclass and override BuildSystemPrompt / ParsePlan to customise behaviour.
+            </summary>
+        </member>
+        <member name="T:Valaiorp.Planner.Planners.ManualPlanner">
+             <summary>
+             Executes a plan supplied directly as a Plan object or as a JSON string.
+             No LLM, no code-authored planner — the caller owns the plan entirely.
+            
+             Use cases:
+               • Developer testing without an LLM
+               • Replaying a logged plan from a previous run
+               • Accepting an LLM-generated plan JSON from an external system
+               • Integration tests with deterministic, file-based plans
+             </summary>
+        </member>
+    </members>
+</doc>

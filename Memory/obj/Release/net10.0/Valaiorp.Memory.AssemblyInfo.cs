@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Valaiorp.Memory")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8c6e93e49ecc4d806761ebefdb36ebbefc61a976")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+16570d38ca646345c65d06a5a8f778d5534d0d53")]
 [assembly: System.Reflection.AssemblyProductAttribute("Valaiorp.Memory")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Valaiorp.Memory")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

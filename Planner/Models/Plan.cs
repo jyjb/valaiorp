@@ -10,6 +10,7 @@ namespace Valaiorp.Planner.Models
         public IReadOnlyList<PlanStep> Steps { get; set; } = Array.Empty<PlanStep>();
         public DeterminismLevel Determinism { get; set; }
         public DateTimeOffset CreatedAt { get; } = DateTimeOffset.UtcNow;
+        public TokenUsage? PlanningTokens { get; set; }
     }
 
     public sealed class PlanStep

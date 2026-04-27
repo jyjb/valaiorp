@@ -35,9 +35,11 @@ namespace Valaiorp.Planner.Planners
         {
             var promptContext = BuildPrompt(context);
             var response = await _llmClient.CompleteAsync(promptContext, ct).ConfigureAwait(false);
-            return response.IsSuccess
+            var plan = response.IsSuccess
                 ? ParsePlan(context, response.Content)
                 : FallbackPlan(context);
+            plan.PlanningTokens = TokenUsage.From(response);
+            return plan;
         }
 
         // ── Prompt construction ──────────────────────────────────────────────────
