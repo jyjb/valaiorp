@@ -26,7 +26,7 @@ Valaiorp processes work across four workflow types. The same runtime, tools, mod
 ### Configuration — two lines
 
 ```csharp
-var config = new AgenticAIConfig
+var config = new ValaiorpConfig
 {
     WorkflowType    = WorkflowType.AiAgent,
     AiParticipation = AiParticipation.ObserveAndReact
@@ -278,7 +278,7 @@ CREATE UNIQUE INDEX idx_work_items_ref
 await using var bot = RuntimeBuilder.BuildBot(
     queueId:        "sap-invoices",
     botId:          "sap-bot",
-    config:         new AgenticAIConfig { WorkflowType = WorkflowType.Irpa }.ApplyProfile(),
+    config:         new ValaiorpConfig { WorkflowType = WorkflowType.Irpa }.ApplyProfile(),
     queue:          new MyQueue(),          // shared SqlWorkQueue — same instance on all machines
     maxConcurrency: 8,                      // items processed in parallel on this machine
     maxAttempts:    3,                      // retries before dead-letter
@@ -312,10 +312,15 @@ Deploy the same binary on N machines, all pointing at the same `SqlWorkQueue`. N
 ### IRPA — Pure Automation (no AI)
 
 ```csharp
-var config = new AgenticAIConfig { WorkflowType = WorkflowType.Irpa }.ApplyProfile();
+using Valaiorp.Configuration.Config;
+using Valaiorp.Core.Enums;
+using Valaiorp.Runtime;
+using Valaiorp.Runtime.Bootstrap;
+
+var config = new ValaiorpConfig { WorkflowType = WorkflowType.Irpa }.ApplyProfile();
 
 await using var runtime = RuntimeBuilder.Build(config);
-plannerOrchestrator.RegisterPlanner(new MySapWorkflowPlanner(), setAsDefault: true);
+runtime.GetService<PlannerOrchestrator>().RegisterPlanner(new MySapWorkflowPlanner(), setAsDefault: true);
 
 var result = await runtime.ExecuteAsync(new MyExecutionContext());
 ```
@@ -323,7 +328,7 @@ var result = await runtime.ExecuteAsync(new MyExecutionContext());
 ### AI Workflow — LLM Plans, Fixed Execution
 
 ```csharp
-var config = new AgenticAIConfig
+var config = new ValaiorpConfig
 {
     WorkflowType    = WorkflowType.AiWorkflow,
     AiParticipation = AiParticipation.ObserveAndReact,
@@ -336,7 +341,7 @@ await using var runtime = RuntimeBuilder.Build(config);
 ### AI Agent — LLM Plans and Re-plans
 
 ```csharp
-var config = new AgenticAIConfig
+var config = new ValaiorpConfig
 {
     WorkflowType    = WorkflowType.AiAgent,
     AiParticipation = AiParticipation.ObserveAndReact,
@@ -347,7 +352,7 @@ var config = new AgenticAIConfig
 ### Agentic — Full Autonomy
 
 ```csharp
-var config = new AgenticAIConfig
+var config = new ValaiorpConfig
 {
     WorkflowType    = WorkflowType.Agentic,
     AiParticipation = AiParticipation.ObserveAndReact,
@@ -480,7 +485,7 @@ public sealed class SapInvoicePlanner : IPlanner
 valaiorp/
 ├── Core/               # IWorkItem, IWorkQueue, IBotContext, QueueRun, QueueReport,
 │                       # ITool, IModule, IExecutionContext, enums, errors
-├── Configuration/      # WorkflowType, AiParticipation, WorkflowProfile, AgenticAIConfig,
+├── Configuration/      # WorkflowType, AiParticipation, WorkflowProfile, ValaiorpConfig,
 │                       # PlannerConfig, AutonomyConfig, LlmConfig, …
 ├── Memory/             # Short-term, long-term, conversation memory
 ├── Tools/              # ToolRegistry, ModuleRegistry, ToolResolver, ToolParameters helpers
@@ -497,7 +502,7 @@ valaiorp/
 ├── Retry/              # MaxAttemptsPolicy, ExponentialBackoffPolicy, CircuitBreakerPolicy
 ├── Logging/            # Plan/step/run logging — in-memory or JSONL files
 ├── Observability/      # Console logger, tracing, metrics
-├── LlmProviders/       # Anthropic, OpenAI, Ollama (raw HttpClient — no vendor SDK)
+├── LlmProviders/       # GenericLlmClient + 7 built-in JSON profiles (Anthropic, OpenAI, Ollama, Gemini, Mistral, Cohere, NVIDIA)
 ├── MultiAgent/         # IAgent, IAgentRegistry, MultiAgentOrchestrator
 ├── Escalation/         # IApprovalProvider, IOverrideProvider, IEscalationHandler
 └── Runtime/            # AgentRuntime, BotWorker, InMemoryWorkQueue, JsonlWorkQueue,
@@ -524,7 +529,8 @@ valaiorp/
 | **4 Planner Types** | `Deliberative` (code) · `Manual` (JSON) · `LlmBased` · `AutonomyAware` |
 | **Manual Plan** | Supply a JSON plan file — `plan.schema.json` + `plan.sample.json` for dev testing |
 | **Variable Binding** | `${StepName.Results.Field}` resolved between plan steps at runtime |
-| **10 Built-in File Formats** | JSON · JSONL · JSONC · TXT · CSV · TSV · PSV · XML · XLSX · DOCX — no NuGet packages |
+| **10 Built-in File Formats** | JSON · JSONL · JSONC · TXT · CSV · TSV · PSV · XML · XLSX · DOCX — no extra NuGet packages |
+| **Built-in Tools** | HTTP API · Folder ops · Windows UIAutomation (Win32/WPF/WinForms) · Playwright browser automation (opt-in) |
 | **Modules** | Reusable multi-step tool sequences — visible to the LLM for planning |
 | **Policy Enforcement** | Pre/post-execution governance rules — runs at execution-unit scope |
 | **Guardrails** | Content-level safety — PII redaction, prompt injection, banned keywords, tool scope, data classification |
@@ -532,7 +538,10 @@ valaiorp/
 | **Guardrail Pipeline** | Block → Redact (chains sanitised content) → Warn → Escalate — first Block wins |
 | **Human Escalation** | Approval workflows · override hooks · manual intervention |
 | **Multi-Agent** | Orchestrator/sub-agent delegation with parallel dispatch and conversation memory |
-| **LLM Providers** | Anthropic · OpenAI · Ollama — raw HttpClient, no vendor SDK |
+| **File-backed Memory** | Short-term, long-term, and conversation memory backed by JSONL files by default — swap for Redis/SQL |
+| **SQL Logging** | `AddSqlPersistence()` layers SQL execution logging alongside mandatory local JSONL logs |
+| **LLM Providers** | 7 built-in profiles: Anthropic · OpenAI · Ollama · Gemini · Mistral · Cohere · NVIDIA — single `GenericLlmClient`, no vendor SDK |
+| **Config File** | Load `ValaiorpConfig` from `valaiorp.json` via `RuntimeBuilder.BuildFromFile(path)` |
 | **Async Throughout** | Non-blocking end-to-end |
 | **Clean Architecture** | Interface-driven, strictly layered, fully DI-compatible |
 

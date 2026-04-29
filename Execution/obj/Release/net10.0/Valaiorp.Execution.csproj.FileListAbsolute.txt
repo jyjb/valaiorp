@@ -35,3 +35,9 @@ D:\._repos\valaiorp\Execution\obj\Release\net10.0\refint\Valaiorp.Execution.dll
 D:\._repos\valaiorp\Execution\obj\Release\net10.0\Valaiorp.Execution.xml
 D:\._repos\valaiorp\Execution\obj\Release\net10.0\Valaiorp.Execution.pdb
 D:\._repos\valaiorp\Execution\obj\Release\net10.0\ref\Valaiorp.Execution.dll
+d:\._repos\valaiorp\Execution\bin\Release\net10.0\Valaiorp.Escalation.dll
+d:\._repos\valaiorp\Execution\bin\Release\net10.0\Valaiorp.Observability.dll
+d:\._repos\valaiorp\Execution\bin\Release\net10.0\Valaiorp.Escalation.pdb
+d:\._repos\valaiorp\Execution\bin\Release\net10.0\Valaiorp.Escalation.xml
+d:\._repos\valaiorp\Execution\bin\Release\net10.0\Valaiorp.Observability.pdb
+d:\._repos\valaiorp\Execution\bin\Release\net10.0\Valaiorp.Observability.xml

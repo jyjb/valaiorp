@@ -26,7 +26,10 @@ Valaiorp processes work across four workflow types. The same runtime, tools, mod
 ### Configuration — two lines
 
 ```csharp
-var config = new AgenticAIConfig
+using Valaiorp.Configuration.Config;
+using Valaiorp.Core.Enums;
+
+var config = new ValaiorpConfig
 {
     WorkflowType    = WorkflowType.AiAgent,
     AiParticipation = AiParticipation.ObserveAndReact
@@ -85,7 +88,7 @@ dotnet add package Valaiorp
 ### IRPA — Pure Automation (no AI)
 
 ```csharp
-var config = new AgenticAIConfig { WorkflowType = WorkflowType.Irpa }.ApplyProfile();
+var config = new ValaiorpConfig { WorkflowType = WorkflowType.Irpa }.ApplyProfile();
 
 await using var runtime = RuntimeBuilder.Build(config);
 runtime.GetService<PlannerOrchestrator>()
@@ -97,7 +100,7 @@ var result = await runtime.ExecuteAsync(new MyExecutionContext());
 ### AI Workflow — LLM Plans, Fixed Execution
 
 ```csharp
-var config = new AgenticAIConfig
+var config = new ValaiorpConfig
 {
     WorkflowType    = WorkflowType.AiWorkflow,
     AiParticipation = AiParticipation.ObserveAndReact,
@@ -110,7 +113,7 @@ await using var runtime = RuntimeBuilder.Build(config);
 ### AI Agent — LLM Plans and Re-plans
 
 ```csharp
-var config = new AgenticAIConfig
+var config = new ValaiorpConfig
 {
     WorkflowType    = WorkflowType.AiAgent,
     AiParticipation = AiParticipation.ObserveAndReact,
@@ -121,7 +124,7 @@ var config = new AgenticAIConfig
 ### Agentic — Full Autonomy
 
 ```csharp
-var config = new AgenticAIConfig
+var config = new ValaiorpConfig
 {
     WorkflowType    = WorkflowType.Agentic,
     AiParticipation = AiParticipation.ObserveAndReact,
@@ -156,7 +159,7 @@ All bots compete for items from the same queue. `SqlWorkQueue` uses `SELECT FOR 
 await using var bot = RuntimeBuilder.BuildBot(
     queueId:        "sap-invoices",
     botId:          "sap-bot",
-    config:         new AgenticAIConfig { WorkflowType = WorkflowType.Irpa }.ApplyProfile(),
+    config:         new ValaiorpConfig { WorkflowType = WorkflowType.Irpa }.ApplyProfile(),
     queue:          new MyQueue(),
     maxConcurrency: 8,
     maxAttempts:    3,
@@ -183,13 +186,17 @@ await bot.StartAsync();
 | **Dead-Letter** | Failed items parked with reason, exception type, and full detail |
 | **4 Planner Types** | `Deliberative` (code) · `Manual` (JSON) · `LlmBased` · `AutonomyAware` |
 | **Variable Binding** | `${StepName.Results.Field}` resolved between plan steps at runtime |
-| **10 Built-in File Formats** | JSON · JSONL · JSONC · TXT · CSV · TSV · PSV · XML · XLSX · DOCX |
+| **10 Built-in File Formats** | JSON · JSONL · JSONC · TXT · CSV · TSV · PSV · XML · XLSX · DOCX — no extra NuGet packages |
+| **Built-in Tools** | HTTP API · Folder ops · Windows UIAutomation (Win32/WPF/WinForms) · Playwright browser automation (opt-in) |
 | **Modules** | Reusable multi-step tool sequences — visible to the LLM for planning |
 | **Policy Enforcement** | Pre/post-execution governance rules |
 | **6 Built-in Guardrails** | PII redaction · prompt injection · banned keywords · tool scope · data classification |
 | **Human Escalation** | Approval workflows · override hooks · manual intervention |
 | **Multi-Agent** | Orchestrator/sub-agent delegation with parallel dispatch |
-| **LLM Providers** | Anthropic · OpenAI · Ollama — raw HttpClient, no vendor SDK |
+| **File-backed Memory** | Short-term, long-term, and conversation memory backed by JSONL files by default — swap for Redis/SQL |
+| **SQL Logging** | `AddSqlPersistence()` layers SQL execution logging alongside the mandatory local JSONL log |
+| **LLM Providers** | 7 built-in profiles: Anthropic · OpenAI · Ollama · Gemini · Mistral · Cohere · NVIDIA — single `GenericLlmClient`, no vendor SDK |
+| **Config File** | `ValaiorpConfig` can be loaded from `valaiorp.json` via `RuntimeBuilder.BuildFromFile()` |
 | **Clean Architecture** | Interface-driven, strictly layered, fully DI-compatible |
 
 ---
@@ -199,7 +206,7 @@ await bot.StartAsync();
 ```
 Valaiorp/
 ├── Core/           # IWorkItem, IWorkQueue, IBotContext, ITool, IModule, IExecutionContext, enums
-├── Configuration/  # WorkflowType, AiParticipation, AgenticAIConfig, WorkflowProfile, LlmConfig
+├── Configuration/  # WorkflowType, AiParticipation, ValaiorpConfig, WorkflowProfile, LlmConfig
 ├── Memory/         # Short-term, long-term, conversation memory
 ├── Tools/          # ToolRegistry, ModuleRegistry, ToolResolver, ToolParameters helpers
 ├── BasicTools/     # 10 built-in file/folder/API/UIAutomation tools
@@ -212,7 +219,7 @@ Valaiorp/
 ├── Retry/          # MaxAttempts, ExponentialBackoff, CircuitBreaker policies
 ├── Logging/        # Plan/step/run logging
 ├── Observability/  # Console logger, tracing, metrics
-├── LlmProviders/   # Anthropic, OpenAI, Ollama clients
+├── LlmProviders/   # GenericLlmClient + 7 built-in JSON profiles (Anthropic, OpenAI, Ollama, Gemini, Mistral, Cohere, NVIDIA)
 ├── MultiAgent/     # IAgent, IAgentRegistry, MultiAgentOrchestrator
 ├── Escalation/     # IApprovalProvider, IEscalationService
 └── Runtime/        # AgentRuntime, BotWorker, queue backends, RuntimeBuilder
@@ -224,8 +231,9 @@ Valaiorp/
 
 - .NET 10 runtime
 - `Microsoft.Extensions.DependencyInjection` (transitive via `Valaiorp.Runtime`)
-- Windows only: UIAutomation tools require `net10.0-windows` TFM
-- Optional: ADO.NET provider NuGet for `SqlWorkQueue` (SqlClient, Npgsql, Sqlite, etc.)
+- Windows only: UIAutomation tools (`windows-ui-automation`) require `net10.0-windows` TFM
+- Optional: `Microsoft.Playwright` NuGet + `PLAYWRIGHT_ENABLED` compile constant for Playwright browser automation
+- Optional: ADO.NET provider NuGet (e.g. `Microsoft.Data.SqlClient`, `Npgsql`, `Microsoft.Data.Sqlite`) for `SqlWorkQueue` / `AddSqlPersistence`
 
 ---
 

@@ -3,6 +3,7 @@ namespace Valaiorp.Tools.Resolvers
     using Valaiorp.Core.Contracts;
     using Valaiorp.Tools.Contracts;
     using Valaiorp.Tools.Registries;
+    using ExecutionContext = Valaiorp.Core.Contracts.ExecutionContext;
 
     public sealed class ToolResolver
     {
@@ -39,6 +40,25 @@ namespace Valaiorp.Tools.Resolvers
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Executes a tool from inside an agent's RunAsync without requiring an IExecutionContext.
+        /// Builds a minimal context from the AgentMessage so agent authors don't have to.
+        /// </summary>
+        public Task<IExecutionResult> ExecuteToolAsync(
+            string toolId,
+            AgentMessage message,
+            IReadOnlyDictionary<string, object> parameters,
+            CancellationToken ct = default)
+        {
+            var context = new Core.Contracts.ExecutionContext
+            {
+                SessionId = message.ConversationId,
+                Metadata  = new Dictionary<string, object>(message.Payload),
+                Prompt    = message.Prompt
+            };
+            return ExecuteToolAsync(toolId, context, parameters, ct);
         }
 
         public async Task<IExecutionResult> ExecuteToolAsync(

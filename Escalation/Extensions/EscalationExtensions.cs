@@ -39,11 +39,38 @@ namespace Valaiorp.Escalation.Extensions
         {
             var service = context.GetEscalationService();
             if (service != null)
-            {
                 return await service.RequestApprovalAsync(context, action, description, ct).ConfigureAwait(false);
-            }
-            return ApprovalResult.Approved("auto-approved", "No escalation service configured");
+
+            // No escalation service wired up: running in fully-autonomous mode.
+            // Log every implicit approval so the decision is always auditable.
+            WriteNoServiceAuditLog(context, action, description);
+            return ApprovalResult.Approved("auto-approved", "No escalation service configured — fully-autonomous mode");
         }
+
+        private static void WriteNoServiceAuditLog(IExecutionContext context, string action, string? description)
+        {
+            try
+            {
+                var logPath = Path.Combine(AppContext.BaseDirectory, "valaiorp-security.jsonl");
+                var entry   = System.Text.Json.JsonSerializer.Serialize(new
+                {
+                    ts        = DateTimeOffset.UtcNow,
+                    provider  = "NoEscalationService",
+                    decision  = "APPROVED",
+                    mode      = "fully-autonomous",
+                    contextId = context.Id,
+                    sessionId = context.SessionId,
+                    userId    = context.UserId,
+                    action,
+                    description
+                });
+                lock (_lock)
+                    File.AppendAllText(logPath, entry + Environment.NewLine);
+            }
+            catch { }
+        }
+
+        private static readonly object _lock = new();
 
         /// <summary>
         /// Requests an override for an action in the context.

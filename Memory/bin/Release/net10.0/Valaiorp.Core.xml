@@ -24,6 +24,9 @@
         <member name="P:Valaiorp.Core.Contracts.IAgent.Capabilities">
             <summary>Tool IDs this agent is permitted to use.</summary>
         </member>
+        <member name="M:Valaiorp.Core.Contracts.IAgentRegistry.GetByCapability(System.String)">
+            <summary>Returns agents whose Capabilities list contains the given tool ID.</summary>
+        </member>
         <member name="T:Valaiorp.Core.Contracts.IApiKeyProvider">
             <summary>
             Resolves API keys from any credential store — env vars, files, vaults, config, etc.
@@ -119,6 +122,29 @@
         </member>
         <member name="M:Valaiorp.Core.Contracts.IWorkQueue.GetReportAsync(System.String,System.Threading.CancellationToken)">
             <summary>Returns a full status and statistics report for a queue.</summary>
+        </member>
+        <member name="P:Valaiorp.Core.Contracts.LlmResponse.ToolCalls">
+            <summary>
+            Populated when the LLM responded with a native tool/function call instead of text.
+            Check this before using <see cref="P:Valaiorp.Core.Contracts.LlmResponse.Content"/> — if ToolCalls is non-empty,
+            Content will typically be empty or a brief thought string.
+            </summary>
+        </member>
+        <member name="T:Valaiorp.Core.Contracts.ToolCall">
+            <summary>
+            A single tool/function call requested by the LLM in its response.
+            Populated by <see cref="P:Valaiorp.Core.Contracts.LlmResponse.ToolCalls"/> when the model uses
+            native function-calling (Anthropic tool_use, OpenAI tool_calls).
+            </summary>
+        </member>
+        <member name="P:Valaiorp.Core.Contracts.ToolCall.CallId">
+            <summary>Provider-assigned call ID (e.g. Anthropic toolu_xxx, OpenAI call_xxx).</summary>
+        </member>
+        <member name="P:Valaiorp.Core.Contracts.ToolCall.ToolName">
+            <summary>Tool/function name as declared in the system prompt or tool spec.</summary>
+        </member>
+        <member name="P:Valaiorp.Core.Contracts.ToolCall.Inputs">
+            <summary>Arguments the LLM wants to pass to the tool.</summary>
         </member>
         <member name="P:Valaiorp.Core.Contracts.PromptContext.SystemPrompt">
             <summary>Static persona / role instructions sent as the system turn.</summary>

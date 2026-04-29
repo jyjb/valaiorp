@@ -5,13 +5,18 @@ namespace Valaiorp.BasicTools.UITools
     public enum UIAutomationAction
     {
         FindWindow,
+        Navigate,
         ClickText,
         ClickButton,
         ClickElement,
         GetText,
         SetText,
         GetTableContent,
-        Navigate
+        Screenshot,
+        WaitForElement,
+        SelectOption,
+        SendKeys,
+        GetAttribute,
     }
 }
 

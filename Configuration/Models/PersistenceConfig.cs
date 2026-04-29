@@ -8,6 +8,9 @@ namespace Valaiorp.Configuration.Models
         /// <summary>Directory for JSONL queue files. Used by the default JsonlWorkQueue.</summary>
         public string QueueDirectory { get; set; } = "queues";
 
+        /// <summary>Directory for file-backed short-term and long-term memory stores.</summary>
+        public string MemoryDirectory { get; set; } = "memory";
+
         /// <summary>
         /// Optional SQL connection string. When set, host app should call
         /// services.AddSqlPersistence(factory) to also log and queue via SQL.

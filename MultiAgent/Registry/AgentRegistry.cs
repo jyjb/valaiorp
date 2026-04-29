@@ -3,7 +3,6 @@ namespace Valaiorp.MultiAgent.Registry
     using System.Collections.Concurrent;
     using Valaiorp.Core.Contracts;
     using Valaiorp.Core.Enums;
-    using Valaiorp.MultiAgent.Contracts;
 
     public sealed class AgentRegistry : IAgentRegistry
     {

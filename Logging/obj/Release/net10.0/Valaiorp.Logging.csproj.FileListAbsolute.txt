@@ -41,3 +41,9 @@ D:\._repos\valaiorp\Logging\obj\Release\net10.0\refint\Valaiorp.Logging.dll
 D:\._repos\valaiorp\Logging\obj\Release\net10.0\Valaiorp.Logging.xml
 D:\._repos\valaiorp\Logging\obj\Release\net10.0\Valaiorp.Logging.pdb
 D:\._repos\valaiorp\Logging\obj\Release\net10.0\ref\Valaiorp.Logging.dll
+d:\._repos\valaiorp\Logging\bin\Release\net10.0\Valaiorp.Escalation.dll
+d:\._repos\valaiorp\Logging\bin\Release\net10.0\Valaiorp.Observability.dll
+d:\._repos\valaiorp\Logging\bin\Release\net10.0\Valaiorp.Escalation.pdb
+d:\._repos\valaiorp\Logging\bin\Release\net10.0\Valaiorp.Escalation.xml
+d:\._repos\valaiorp\Logging\bin\Release\net10.0\Valaiorp.Observability.pdb
+d:\._repos\valaiorp\Logging\bin\Release\net10.0\Valaiorp.Observability.xml

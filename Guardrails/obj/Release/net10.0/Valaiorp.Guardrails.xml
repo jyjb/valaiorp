@@ -138,6 +138,10 @@
                Block or Escalate — first violation wins; pipeline stops immediately.
                Redact            — redacted content is forwarded to the next guardrail.
                Warn              — logged in the result metadata; pipeline continues.
+            
+             Thread-safety: Add/Remove are lock-guarded to preserve insertion order.
+             Evaluation takes a snapshot of the list so long-running async checks never
+             block registrations on other threads.
              </summary>
         </member>
     </members>

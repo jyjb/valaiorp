@@ -8,8 +8,14 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Core\Valaiorp.Core.csproj" />
+    <ProjectReference Include="..\Observability\Valaiorp.Observability.csproj" />
     <ProjectReference Include="..\Policy\Valaiorp.Policy.csproj" />
     <ProjectReference Include="..\Tools\Valaiorp.Tools.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="plan.schema.json" />
+    <EmbeddedResource Include="plan.sample.json" />
   </ItemGroup>
 
 </Project>

@@ -5,7 +5,7 @@ namespace Valaiorp.Runtime.Configuration
 
     public static class RuntimeConfigLoader
     {
-        public static AgenticAIConfig LoadFromFile(string filePath)
+        public static ValaiorpConfig LoadFromFile(string filePath)
         {
             var json = System.IO.File.ReadAllText(filePath);
             var options = new JsonSerializerOptions
@@ -15,13 +15,13 @@ namespace Valaiorp.Runtime.Configuration
                 ReadCommentHandling = JsonCommentHandling.Skip,
                 AllowTrailingCommas = true
             };
-            return JsonSerializer.Deserialize<AgenticAIConfig>(json, options)
+            return JsonSerializer.Deserialize<ValaiorpConfig>(json, options)
                 ?? throw new InvalidOperationException("Failed to deserialize configuration.");
         }
 
-        public static AgenticAIConfig LoadDefault()
+        public static ValaiorpConfig LoadDefault()
         {
-            return new AgenticAIConfig();
+            return new ValaiorpConfig();
         }
     }
 }

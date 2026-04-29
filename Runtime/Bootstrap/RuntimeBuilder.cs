@@ -16,13 +16,14 @@ namespace Valaiorp.Runtime.Bootstrap
         // ── Single-runtime factory ────────────────────────────────────────────────
 
         public static AgentRuntime Build(
-            AgenticAIConfig? config = null,
+            ValaiorpConfig? config = null,
             Action<IServiceCollection>? configureServices = null,
             Action<ModuleRegistry>? configureModules = null)
         {
             var services = new ServiceCollection();
 
             var effectiveConfig = config ?? RuntimeConfigLoader.LoadDefault();
+            effectiveConfig.Validate();
             services.AddAgenticAIRuntime(effectiveConfig);
 
             configureServices?.Invoke(services);
@@ -72,7 +73,7 @@ namespace Valaiorp.Runtime.Bootstrap
         public static BotWorker BuildBot(
             string                             queueId,
             string                             botId,
-            AgenticAIConfig?                   config            = null,
+            ValaiorpConfig?                   config            = null,
             IWorkQueue?                        queue             = null,
             Func<IWorkItem, IExecutionContext>? contextFactory   = null,
             Action<IServiceCollection>?        configureServices = null,

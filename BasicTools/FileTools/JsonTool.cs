@@ -46,7 +46,8 @@ namespace Valaiorp.BasicTools.FileTools
 
         public async Task<string> ReadAsync(string filePath, CancellationToken ct = default)
         {
-            if (!File.Exists(filePath)) throw new FileNotFoundException($"File not found: {filePath}");
+            filePath = PathGuard.Validate(filePath);
+            if (!File.Exists(filePath)) throw new FileNotFoundException("File not found.");
             var content = await File.ReadAllTextAsync(filePath, ct).ConfigureAwait(false);
             try { JsonDocument.Parse(content); }
             catch (JsonException ex) { throw new InvalidDataException("File is not valid JSON.", ex); }
@@ -55,6 +56,7 @@ namespace Valaiorp.BasicTools.FileTools
 
         public async Task WriteAsync(string filePath, string content, CancellationToken ct = default)
         {
+            filePath = PathGuard.Validate(filePath);
             try { JsonDocument.Parse(content); }
             catch (JsonException ex) { throw new InvalidDataException("Content is not valid JSON.", ex); }
             await File.WriteAllTextAsync(filePath, content, ct).ConfigureAwait(false);

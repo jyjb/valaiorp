@@ -45,22 +45,24 @@ namespace Valaiorp.BasicTools.FileTools
 
         public async Task<string> ReadAsync(string filePath, CancellationToken ct = default)
         {
-            if (!File.Exists(filePath)) throw new FileNotFoundException($"File not found: {filePath}");
+            filePath = PathGuard.Validate(filePath);
+            if (!File.Exists(filePath)) throw new FileNotFoundException("File not found.");
             var lines = await File.ReadAllLinesAsync(filePath, ct).ConfigureAwait(false);
             foreach (var line in lines.Where(l => !string.IsNullOrWhiteSpace(l)))
             {
                 try { JsonDocument.Parse(line); }
-                catch (JsonException ex) { throw new InvalidDataException($"Invalid JSON line: {line}", ex); }
+                catch (JsonException ex) { throw new InvalidDataException("File contains an invalid JSON line.", ex); }
             }
             return string.Join(Environment.NewLine, lines);
         }
 
         public async Task WriteAsync(string filePath, string content, CancellationToken ct = default)
         {
+            filePath = PathGuard.Validate(filePath);
             foreach (var line in content.Split(new[] { Environment.NewLine, "\n" }, StringSplitOptions.RemoveEmptyEntries))
             {
                 try { JsonDocument.Parse(line); }
-                catch (JsonException ex) { throw new InvalidDataException($"Invalid JSON line: {line}", ex); }
+                catch (JsonException ex) { throw new InvalidDataException("Content contains an invalid JSON line.", ex); }
             }
             await File.WriteAllTextAsync(filePath, content, ct).ConfigureAwait(false);
         }

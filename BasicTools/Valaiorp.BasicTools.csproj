@@ -13,8 +13,9 @@
 
   <!-- References the preinstalled Windows Desktop WPF runtime for UIAutomation types.
        This is an SDK FrameworkReference, NOT a NuGet package. -->
+  <!-- Microsoft.WindowsDesktop.App covers both WPF (System.Windows.Automation) and WinForms (System.Drawing) -->
   <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-windows'">
-    <FrameworkReference Include="Microsoft.WindowsDesktop.App.WPF" />
+    <FrameworkReference Include="Microsoft.WindowsDesktop.App" />
   </ItemGroup>
 
   <ItemGroup>

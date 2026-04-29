@@ -7,6 +7,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Core\Valaiorp.Core.csproj" />
+    <ProjectReference Include="..\Escalation\Valaiorp.Escalation.csproj" />
     <ProjectReference Include="..\Policy\Valaiorp.Policy.csproj" />
     <ProjectReference Include="..\Planner\Valaiorp.Planner.csproj" />
     <ProjectReference Include="..\Tools\Valaiorp.Tools.csproj" />

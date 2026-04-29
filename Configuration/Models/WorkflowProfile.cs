@@ -4,7 +4,7 @@ namespace Valaiorp.Configuration.Models
 
     /// <summary>
     /// Maps (WorkflowType, AiParticipation) to concrete planner and autonomy settings.
-    /// Call AgenticAIConfig.ApplyProfile() to apply these presets automatically.
+    /// Call ValaiorpConfig.ApplyProfile() to apply these presets automatically.
     /// </summary>
     public static class WorkflowProfile
     {
@@ -16,7 +16,7 @@ namespace Valaiorp.Configuration.Models
             {
                 // ── IRPA — no AI at all ──────────────────────────────────────────────
                 (WorkflowType.Irpa, _) => (
-                    PlannerType.Deliberative,
+                    PlannerType.Reactive,   // deterministic, no LLM required
                     new AutonomyConfig
                     {
                         Level                    = 0.0,

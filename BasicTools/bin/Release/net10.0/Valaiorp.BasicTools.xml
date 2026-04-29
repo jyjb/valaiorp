@@ -4,5 +4,31 @@
         <name>Valaiorp.BasicTools</name>
     </assembly>
     <members>
+        <member name="T:Valaiorp.BasicTools.FileTools.PathGuard">
+            <summary>
+            Validates file and directory paths to prevent directory traversal attacks.
+            Set <see cref="P:Valaiorp.BasicTools.FileTools.PathGuard.SandboxBase"/> to restrict all operations to a specific directory.
+            </summary>
+        </member>
+        <member name="P:Valaiorp.BasicTools.FileTools.PathGuard.SandboxBase">
+            <summary>
+            When set, every resolved path must reside within this directory.
+            Leave null to allow any path while still blocking ".." traversal sequences.
+            </summary>
+        </member>
+        <member name="M:Valaiorp.BasicTools.FileTools.PathGuard.Validate(System.String)">
+            <summary>
+            Validates and fully resolves a raw path.
+            Throws <see cref="T:System.UnauthorizedAccessException"/> on traversal or sandbox violation.
+            Throws <see cref="T:System.ArgumentException"/> when the path is null or empty.
+            </summary>
+        </member>
+        <member name="T:Valaiorp.BasicTools.ToolSecurityLog">
+            <summary>
+            Writes security-relevant tool events to a dedicated JSONL audit log.
+            Location: valaiorp-security.jsonl alongside the application binary.
+            Failures are swallowed — security logging must never crash a tool call.
+            </summary>
+        </member>
     </members>
 </doc>

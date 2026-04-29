@@ -12,6 +12,20 @@
           "bin/placeholder/Valaiorp.Core.dll": {}
         }
       },
+      "Valaiorp.Observability/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Valaiorp.Core": "1.0.0",
+          "Valaiorp.Policy": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Valaiorp.Observability.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Valaiorp.Observability.dll": {}
+        }
+      },
       "Valaiorp.Policy/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v10.0",
@@ -46,6 +60,11 @@
       "path": "../Core/Valaiorp.Core.csproj",
       "msbuildProject": "../Core/Valaiorp.Core.csproj"
     },
+    "Valaiorp.Observability/1.0.0": {
+      "type": "project",
+      "path": "../Observability/Valaiorp.Observability.csproj",
+      "msbuildProject": "../Observability/Valaiorp.Observability.csproj"
+    },
     "Valaiorp.Policy/1.0.0": {
       "type": "project",
       "path": "../Policy/Valaiorp.Policy.csproj",
@@ -60,6 +79,7 @@
   "projectFileDependencyGroups": {
     "net10.0": [
       "Valaiorp.Core >= 1.0.0",
+      "Valaiorp.Observability >= 1.0.0",
       "Valaiorp.Policy >= 1.0.0",
       "Valaiorp.Tools >= 1.0.0"
     ]
@@ -99,6 +119,9 @@
           "projectReferences": {
             "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj": {
               "projectPath": "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj"
+            },
+            "D:\\._repos\\valaiorp\\Observability\\Valaiorp.Observability.csproj": {
+              "projectPath": "D:\\._repos\\valaiorp\\Observability\\Valaiorp.Observability.csproj"
             },
             "D:\\._repos\\valaiorp\\Policy\\Valaiorp.Policy.csproj": {
               "projectPath": "D:\\._repos\\valaiorp\\Policy\\Valaiorp.Policy.csproj"

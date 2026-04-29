@@ -9,7 +9,7 @@ namespace Valaiorp.Core.Contracts
         public Exception? Exception { get; }
         public IReadOnlyCollection<IExecutionStep> ExecutedSteps { get; } = Array.Empty<IExecutionStep>();
         public IDictionary<string, object> Outputs { get; }
-        public TimeSpan ExecutionTime { get; } = TimeSpan.Zero;
+        public TimeSpan ExecutionTime { get; }
 
         public ExecutionResult(
             string id,
@@ -17,7 +17,8 @@ namespace Valaiorp.Core.Contracts
             bool isSuccess,
             string? errorMessage = null,
             Exception? exception = null,
-            IDictionary<string, object>? outputs = null)
+            IDictionary<string, object>? outputs = null,
+            TimeSpan executionTime = default)
         {
             Id = id;
             ContextId = contextId;
@@ -25,6 +26,7 @@ namespace Valaiorp.Core.Contracts
             ErrorMessage = errorMessage;
             Exception = exception;
             Outputs = outputs ?? new Dictionary<string, object>();
+            ExecutionTime = executionTime;
         }
     }
 }

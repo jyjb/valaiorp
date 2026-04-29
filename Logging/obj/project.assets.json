@@ -75,12 +75,27 @@
           "bin/placeholder/Valaiorp.Core.dll": {}
         }
       },
+      "Valaiorp.Escalation/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection": "10.0.0",
+          "Valaiorp.Core": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Valaiorp.Escalation.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Valaiorp.Escalation.dll": {}
+        }
+      },
       "Valaiorp.Execution/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v10.0",
         "dependencies": {
           "Valaiorp.Configuration": "1.0.0",
           "Valaiorp.Core": "1.0.0",
+          "Valaiorp.Escalation": "1.0.0",
           "Valaiorp.Memory": "1.0.0",
           "Valaiorp.Planner": "1.0.0",
           "Valaiorp.Policy": "1.0.0",
@@ -107,11 +122,26 @@
           "bin/placeholder/Valaiorp.Memory.dll": {}
         }
       },
+      "Valaiorp.Observability/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Valaiorp.Core": "1.0.0",
+          "Valaiorp.Policy": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Valaiorp.Observability.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Valaiorp.Observability.dll": {}
+        }
+      },
       "Valaiorp.Planner/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v10.0",
         "dependencies": {
           "Valaiorp.Core": "1.0.0",
+          "Valaiorp.Observability": "1.0.0",
           "Valaiorp.Policy": "1.0.0",
           "Valaiorp.Tools": "1.0.0"
         },
@@ -242,6 +272,11 @@
       "path": "../Core/Valaiorp.Core.csproj",
       "msbuildProject": "../Core/Valaiorp.Core.csproj"
     },
+    "Valaiorp.Escalation/1.0.0": {
+      "type": "project",
+      "path": "../Escalation/Valaiorp.Escalation.csproj",
+      "msbuildProject": "../Escalation/Valaiorp.Escalation.csproj"
+    },
     "Valaiorp.Execution/1.0.0": {
       "type": "project",
       "path": "../Execution/Valaiorp.Execution.csproj",
@@ -251,6 +286,11 @@
       "type": "project",
       "path": "../Memory/Valaiorp.Memory.csproj",
       "msbuildProject": "../Memory/Valaiorp.Memory.csproj"
+    },
+    "Valaiorp.Observability/1.0.0": {
+      "type": "project",
+      "path": "../Observability/Valaiorp.Observability.csproj",
+      "msbuildProject": "../Observability/Valaiorp.Observability.csproj"
     },
     "Valaiorp.Planner/1.0.0": {
       "type": "project",

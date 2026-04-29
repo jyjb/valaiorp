@@ -22,14 +22,20 @@ namespace Valaiorp.Retry.Strategies
 
             while (true)
             {
+                ct.ThrowIfCancellationRequested();
                 attemptNumber++;
                 try
                 {
                     lastResult = await operation(context, ct).ConfigureAwait(false);
-                    if (lastResult.IsSuccess || !await _retryPolicy.ShouldRetryAsync(context, lastResult, attemptNumber, ct).ConfigureAwait(false))
-                    {
+                    if (lastResult.IsSuccess)
                         break;
-                    }
+
+                    if (!await _retryPolicy.ShouldRetryAsync(context, lastResult, attemptNumber, ct).ConfigureAwait(false))
+                        break;
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
                 }
                 catch (Exception ex)
                 {
@@ -39,6 +45,9 @@ namespace Valaiorp.Retry.Strategies
                         false,
                         ex.Message,
                         ex);
+
+                    if (!await _retryPolicy.ShouldRetryAsync(context, lastResult, attemptNumber, ct).ConfigureAwait(false))
+                        break;
                 }
             }
 

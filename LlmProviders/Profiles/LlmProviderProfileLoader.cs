@@ -21,7 +21,7 @@ namespace Valaiorp.LlmProviders.Profiles
             var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName)
                 ?? throw new InvalidOperationException(
                     $"No built-in profile for provider '{provider}'. " +
-                    "Built-in providers: anthropic, openai, ollama, gemini, mistral, cohere. " +
+                    "Built-in providers: anthropic, openai, ollama, gemini, mistral, cohere, nvidia. " +
                     "For other providers call LlmProviderProfileLoader.LoadFromFile(path).");
 
             using (stream)

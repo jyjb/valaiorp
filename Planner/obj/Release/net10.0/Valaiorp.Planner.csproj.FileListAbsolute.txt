@@ -23,3 +23,6 @@ D:\._repos\valaiorp\Planner\obj\Release\net10.0\refint\Valaiorp.Planner.dll
 D:\._repos\valaiorp\Planner\obj\Release\net10.0\Valaiorp.Planner.xml
 D:\._repos\valaiorp\Planner\obj\Release\net10.0\Valaiorp.Planner.pdb
 D:\._repos\valaiorp\Planner\obj\Release\net10.0\ref\Valaiorp.Planner.dll
+d:\._repos\valaiorp\Planner\bin\Release\net10.0\Valaiorp.Observability.dll
+d:\._repos\valaiorp\Planner\bin\Release\net10.0\Valaiorp.Observability.pdb
+d:\._repos\valaiorp\Planner\bin\Release\net10.0\Valaiorp.Observability.xml

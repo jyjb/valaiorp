@@ -1,5 +1,7 @@
 namespace Valaiorp.BasicTools.FileTools
 {
+    using System.Text;
+    using System.Text.Json;
     using Valaiorp.Core.Contracts;
     using Valaiorp.Core.Enums;
     using Valaiorp.Tools.Helpers;
@@ -34,7 +36,9 @@ namespace Valaiorp.BasicTools.FileTools
 
                 if (operation == "write")
                 {
-                    await WriteAsync(filePath, parameters.GetString("content"), ct).ConfigureAwait(false);
+                    var raw     = parameters.GetString("content");
+                    var content = TryConvertJsonToCsv(raw) ?? raw;
+                    await WriteAsync(filePath, content, ct).ConfigureAwait(false);
                     return ToolResult.Ok();
                 }
 
@@ -45,11 +49,64 @@ namespace Valaiorp.BasicTools.FileTools
 
         public async Task<string> ReadAsync(string filePath, CancellationToken ct = default)
         {
-            if (!File.Exists(filePath)) throw new FileNotFoundException($"File not found: {filePath}");
+            filePath = PathGuard.Validate(filePath);
+            if (!File.Exists(filePath)) throw new FileNotFoundException("File not found.");
             return await File.ReadAllTextAsync(filePath, ct).ConfigureAwait(false);
         }
 
         public async Task WriteAsync(string filePath, string content, CancellationToken ct = default)
-            => await File.WriteAllTextAsync(filePath, content, ct).ConfigureAwait(false);
+        {
+            filePath = PathGuard.Validate(filePath);
+            await File.WriteAllTextAsync(filePath, content, ct).ConfigureAwait(false);
+        }
+
+        // Detects a JSON array and converts it to CSV; returns null if input is not a JSON array.
+        private static string? TryConvertJsonToCsv(string? raw)
+        {
+            if (string.IsNullOrWhiteSpace(raw)) return null;
+            var trimmed = raw.TrimStart();
+            if (!trimmed.StartsWith('[')) return null;
+
+            try
+            {
+                using var doc = JsonDocument.Parse(trimmed);
+                if (doc.RootElement.ValueKind != JsonValueKind.Array) return null;
+
+                var rows = doc.RootElement.EnumerateArray()
+                    .Where(r => r.ValueKind == JsonValueKind.Object)
+                    .ToList();
+                if (rows.Count == 0) return string.Empty;
+
+                var headers = rows
+                    .SelectMany(r => r.EnumerateObject().Select(p => p.Name))
+                    .Distinct()
+                    .ToList();
+
+                var sb = new StringBuilder();
+                sb.AppendLine(string.Join(",", headers.Select(CsvEscape)));
+
+                foreach (var row in rows)
+                {
+                    var props = row.EnumerateObject().ToDictionary(p => p.Name, p => p.Value);
+                    var values = headers.Select(h =>
+                    {
+                        if (!props.TryGetValue(h, out var v)) return string.Empty;
+                        var text = v.ValueKind == JsonValueKind.String ? v.GetString() ?? string.Empty : v.ToString();
+                        return CsvEscape(text);
+                    });
+                    sb.AppendLine(string.Join(",", values));
+                }
+
+                return sb.ToString();
+            }
+            catch { return null; }
+        }
+
+        private static string CsvEscape(string field)
+        {
+            if (field.Contains(',') || field.Contains('"') || field.Contains('\n') || field.Contains('\r'))
+                return $"\"{field.Replace("\"", "\"\"")}\"";
+            return field;
+        }
     }
 }

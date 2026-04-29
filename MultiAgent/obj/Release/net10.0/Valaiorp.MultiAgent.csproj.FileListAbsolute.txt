@@ -38,3 +38,9 @@ D:\._repos\valaiorp\MultiAgent\obj\Release\net10.0\refint\Valaiorp.MultiAgent.dl
 D:\._repos\valaiorp\MultiAgent\obj\Release\net10.0\Valaiorp.MultiAgent.xml
 D:\._repos\valaiorp\MultiAgent\obj\Release\net10.0\Valaiorp.MultiAgent.pdb
 D:\._repos\valaiorp\MultiAgent\obj\Release\net10.0\ref\Valaiorp.MultiAgent.dll
+d:\._repos\valaiorp\MultiAgent\bin\Release\net10.0\Valaiorp.Escalation.dll
+d:\._repos\valaiorp\MultiAgent\bin\Release\net10.0\Valaiorp.Observability.dll
+d:\._repos\valaiorp\MultiAgent\bin\Release\net10.0\Valaiorp.Escalation.pdb
+d:\._repos\valaiorp\MultiAgent\bin\Release\net10.0\Valaiorp.Escalation.xml
+d:\._repos\valaiorp\MultiAgent\bin\Release\net10.0\Valaiorp.Observability.pdb
+d:\._repos\valaiorp\MultiAgent\bin\Release\net10.0\Valaiorp.Observability.xml

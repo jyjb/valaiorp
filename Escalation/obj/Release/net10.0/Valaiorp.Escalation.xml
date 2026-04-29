@@ -199,13 +199,29 @@
         <member name="T:Valaiorp.Escalation.DependencyInjection.EscalationServiceCollectionExtensions">
             <summary>
             Extensions for registering escalation services in DI.
-            The host application MUST provide implementations for these interfaces.
             </summary>
+        </member>
+        <member name="M:Valaiorp.Escalation.DependencyInjection.EscalationServiceCollectionExtensions.AddEscalationServices(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Boolean,System.Nullable{System.TimeSpan})">
+             <summary>
+             Registers built-in escalation providers so the framework works out of the box.
+            
+             In production replace <see cref="T:Valaiorp.Escalation.Contracts.IApprovalProvider"/> with a notification-backed
+             implementation (Slack, Teams, email) by calling
+             <c>services.AddSingleton&lt;IApprovalProvider, MyProvider&gt;()</c> after this call.
+             </summary>
+             <param name="autoApprove">
+             When true, uses <see cref="T:Valaiorp.Escalation.Implementations.AutoApproveProvider"/> (no human gate — suitable for tests/CI).
+             When false (default), uses <see cref="T:Valaiorp.Escalation.Implementations.ConsoleApprovalProvider"/> (blocks for operator input).
+             </param>
+             <param name="approvalTimeout">
+             Timeout for console approval. Defaults to 5 minutes. Ignored when autoApprove is true.
+             </param>
         </member>
         <member name="M:Valaiorp.Escalation.DependencyInjection.EscalationServiceCollectionExtensions.AddEscalationInterfaces(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
             <summary>
-            Registers the escalation service interfaces. The host application
-            must provide concrete implementations.
+            Registers the escalation service interfaces with throw-factories so the host application
+            must provide concrete implementations before the service can be resolved.
+            Use <see cref="M:Valaiorp.Escalation.DependencyInjection.EscalationServiceCollectionExtensions.AddEscalationServices(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Boolean,System.Nullable{System.TimeSpan})"/> instead for built-in implementations.
             </summary>
         </member>
         <member name="T:Valaiorp.Escalation.DependencyInjection.DefaultEscalationService">
@@ -242,6 +258,33 @@
         <member name="M:Valaiorp.Escalation.Extensions.EscalationExtensions.EscalateAsync(Valaiorp.Core.Contracts.IExecutionContext,Valaiorp.Escalation.Contracts.EscalationReason,System.String,System.Threading.CancellationToken)">
             <summary>
             Handles an escalation in the context.
+            </summary>
+        </member>
+        <member name="T:Valaiorp.Escalation.Implementations.AutoApproveProvider">
+            <summary>
+            Always approves. Use in automated / fully-agentic pipelines where human-in-the-loop
+            is intentionally disabled. Every approval is written to the security audit log so the
+            decision is always traceable.
+            Do NOT use in supervised or production deployments without understanding the implications.
+            </summary>
+        </member>
+        <member name="T:Valaiorp.Escalation.Implementations.ConsoleApprovalProvider">
+            <summary>
+            Prompts an operator at the console to approve or reject a high-risk action.
+            Suitable for interactive CLI / bot-operator scenarios.
+            Times out and auto-rejects if no response is received within <see cref="P:Valaiorp.Escalation.Implementations.ConsoleApprovalProvider.Timeout"/>.
+            </summary>
+        </member>
+        <member name="T:Valaiorp.Escalation.Implementations.LoggingEscalationHandler">
+            <summary>
+            Writes escalation events to a TextWriter (default: Console.Error) and auto-resolves them.
+            Swap for a notification-backed handler (Slack, Teams, PagerDuty) in production.
+            </summary>
+        </member>
+        <member name="T:Valaiorp.Escalation.Implementations.PassthroughOverrideProvider">
+            <summary>
+            No-op override provider. Returns IsOverridden = false and leaves action and parameters
+            unchanged. Use this as the default when runtime parameter overrides are not needed.
             </summary>
         </member>
     </members>

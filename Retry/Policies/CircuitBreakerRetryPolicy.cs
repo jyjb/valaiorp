@@ -4,11 +4,21 @@ namespace Valaiorp.Retry.Policies
     using Valaiorp.Core.Contracts;
     using Valaiorp.Retry.Contracts;
 
+    /// <summary>
+    /// Trips after <see cref="FailureThreshold"/> consecutive failures on the same
+    /// circuit key (session + tool) and holds the circuit open for <see cref="ResetTimeout"/>.
+    /// Thread-safe: all state mutations on a <see cref="CircuitState"/> are lock-guarded.
+    /// </summary>
     public sealed class CircuitBreakerRetryPolicy : IRetryPolicy
     {
         private readonly int _failureThreshold;
         private readonly TimeSpan _resetTimeout;
+
+        // Key: "{sessionId}:{toolId}" – shared across requests in the same session to the same tool.
         private readonly ConcurrentDictionary<string, CircuitState> _circuitStates = new();
+
+        public int FailureThreshold => _failureThreshold;
+        public TimeSpan ResetTimeout => _resetTimeout;
 
         public CircuitBreakerRetryPolicy(int failureThreshold = 5, TimeSpan resetTimeout = default)
         {
@@ -22,40 +32,49 @@ namespace Valaiorp.Retry.Policies
             int attemptNumber,
             CancellationToken ct = default)
         {
-            var circuitId = context.Id;
+            // Key is stable across requests for the same logical resource.
+            // Pull the tool hint from metadata if the executor placed it there; fall back to session.
+            var toolHint = context.Metadata.TryGetValue("_circuitKey", out var k) && k is string s ? s : string.Empty;
+            var circuitId = $"{context.SessionId}:{toolHint}";
+
             var state = _circuitStates.GetOrAdd(circuitId, _ => new CircuitState());
 
-            if (state.IsOpen)
+            lock (state)
             {
-                if (DateTimeOffset.UtcNow - state.LastFailureTime > _resetTimeout)
+                if (state.IsOpen)
                 {
-                    // Reset the circuit
-                    state.Reset();
+                    if (DateTimeOffset.UtcNow - state.LastFailureTime > _resetTimeout)
+                        state.Reset();
+                    else
+                        return Task.FromResult(false); // circuit still open — don't retry
+                }
+
+                if (!result.IsSuccess)
+                {
+                    state.FailureCount++;
+                    state.LastFailureTime = DateTimeOffset.UtcNow;
+
+                    if (state.FailureCount >= _failureThreshold)
+                    {
+                        state.IsOpen = true;
+                        return Task.FromResult(false); // tripped — stop retrying
+                    }
                 }
                 else
                 {
-                    return Task.FromResult(false);
+                    state.Reset();
                 }
-            }
 
-            if (!result.IsSuccess)
-            {
-                state.FailureCount++;
-                state.LastFailureTime = DateTimeOffset.UtcNow;
-
-                if (state.FailureCount >= _failureThreshold)
-                {
-                    state.IsOpen = true;
-                    return Task.FromResult(false);
-                }
+                return Task.FromResult(true);
             }
-            else
-            {
-                state.Reset();
-            }
-
-            return Task.FromResult(true);
         }
+
+        /// <summary>
+        /// Manually resets the circuit for a given session/tool combination.
+        /// Useful in tests and admin endpoints.
+        /// </summary>
+        public void Reset(string sessionId, string toolId = "")
+            => _circuitStates.TryRemove($"{sessionId}:{toolId}", out _);
 
         private sealed class CircuitState
         {

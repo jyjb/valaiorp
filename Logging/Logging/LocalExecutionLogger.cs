@@ -18,29 +18,55 @@ namespace Valaiorp.Tools.Enhanced.Logging
 
         public async Task LogPlanAsync(Plan plan, IExecutionContext context, CancellationToken ct = default)
         {
+            var plannerType = (plan.Planner?.Type ?? plan.PlanningTokens switch
+            {
+                null => Core.Enums.PlannerType.Reactive,
+                _    => Core.Enums.PlannerType.LlmBased
+            }).ToString();
+
             var logEntry = new
             {
                 Type = "Plan",
+                Version = plan.Version,
                 ContextId = context.Id,
                 PlanId = plan.Id,
                 Timestamp = DateTimeOffset.UtcNow,
-                AiUsed = plan.PlanningTokens != null,
-                PlanningTokens = plan.PlanningTokens != null ? new
+                DeterminismLevel = plan.Determinism.ToString(),
+                AutonomyLevel = plan.AutonomyLevel,
+                Planner = new
                 {
-                    plan.PlanningTokens.InputTokens,
-                    plan.PlanningTokens.OutputTokens,
-                    plan.PlanningTokens.TotalTokens,
-                    plan.PlanningTokens.ModelId
-                } : null,
+                    Type = plannerType,
+                    PlanningTokens = plan.PlanningTokens != null ? new
+                    {
+                        plan.PlanningTokens.InputTokens,
+                        plan.PlanningTokens.OutputTokens,
+                        plan.PlanningTokens.TotalTokens,
+                        plan.PlanningTokens.ModelId
+                    } : null
+                },
+                Governance = plan.Governance,
+                Metadata = plan.Metadata,
                 Steps = plan.Steps.Select(s => new
                 {
                     s.Id,
                     s.Name,
                     s.Description,
+                    s.Type,
                     s.ToolId,
                     s.ModuleId,
+                    s.AgentId,
+                    ExecutionMode = s.Mode.ToString(),
+                    DeterminismLevel = s.Determinism.ToString(),
+                    s.Inputs,
+                    s.ExpectedOutputs,
+                    s.ErrorHandling,
+                    s.Validation,
+                    s.Observability,
+                    s.NextSteps,
                     SubStepsCount = s.SubSteps.Count
-                })
+                }),
+                WorkflowState = plan.WorkflowState.Count > 0 ? plan.WorkflowState : null,
+                Dependencies = plan.Dependencies
             };
 
             var logKey = $"{_logKeyPrefix}plan_{plan.Id}";

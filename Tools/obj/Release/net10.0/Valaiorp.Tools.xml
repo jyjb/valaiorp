@@ -4,5 +4,42 @@
         <name>Valaiorp.Tools</name>
     </assembly>
     <members>
+        <member name="T:Valaiorp.Tools.Contracts.ICompensatable">
+             <summary>
+             Opt-in interface for tools that can undo their own side-effects.
+            
+             When a tool implements <see cref="T:Valaiorp.Tools.Contracts.ICompensatable"/>, the TransactionManager
+             calls <see cref="M:Valaiorp.Tools.Contracts.ICompensatable.CompensateAsync(Valaiorp.Core.Contracts.IExecutionContext,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object},System.Threading.CancellationToken)"/> during rollback instead of only flipping an in-memory
+             status flag. This enables real undo for file writes, API calls, database inserts, etc.
+            
+             Contract:
+               • <see cref="M:Valaiorp.Tools.Contracts.ICompensatable.CompensateAsync(Valaiorp.Core.Contracts.IExecutionContext,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object},System.Threading.CancellationToken)"/> receives the same outputs the tool produced so it can
+                 identify exactly what was created/changed (e.g., a file path, a record ID).
+               • The method MUST be idempotent — it may be called more than once on the same outputs.
+               • If compensation itself fails, throw; the caller will surface the error.
+             </summary>
+        </member>
+        <member name="M:Valaiorp.Tools.Helpers.ToolParameters.ParsePipeInput(System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})">
+            <summary>
+            Splits a pipe-delimited "input" parameter into parts (max 3 so the last segment may itself contain pipes).
+            Protocol: action|param1|param2  e.g. "SetText|#username|admin"
+            </summary>
+        </member>
+        <member name="M:Valaiorp.Tools.Registries.ToolRegistry.FormatForSystemPrompt">
+             <summary>
+             Returns a formatted list of all registered tools suitable for inclusion in an
+             LLM system prompt. Agent authors call this to tell the LLM which tools are available
+             without re-implementing tool discovery themselves.
+            
+             Format per tool:
+               - {id}: {description}
+             </summary>
+        </member>
+        <member name="M:Valaiorp.Tools.Resolvers.ToolResolver.ExecuteToolAsync(System.String,Valaiorp.Core.Contracts.AgentMessage,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object},System.Threading.CancellationToken)">
+            <summary>
+            Executes a tool from inside an agent's RunAsync without requiring an IExecutionContext.
+            Builds a minimal context from the AgentMessage so agent authors don't have to.
+            </summary>
+        </member>
     </members>
 </doc>

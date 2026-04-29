@@ -9,7 +9,7 @@ Consuming the Valaiorp framework as compiled assemblies in a .NET 10 project.
 | Assembly | Purpose |
 |----------|---------|
 | `Valaiorp.Core.dll` | Contracts (`IWorkItem`, `IWorkQueue`, `IBotContext`, `ITool`, `IModule`, …), enums, errors — always required |
-| `Valaiorp.Configuration.dll` | `AgenticAIConfig`, `WorkflowProfile`, all config models |
+| `Valaiorp.Configuration.dll` | `ValaiorpConfig`, `WorkflowProfile`, all config models |
 | `Valaiorp.Runtime.dll` | `AgentRuntime`, `BotWorker`, queue implementations, `RuntimeBuilder` — always required |
 | `Valaiorp.Memory.dll` | Short-term, long-term, and conversation memory |
 | `Valaiorp.Tools.dll` | `ToolRegistry`, `ModuleRegistry`, `ToolResolver`, `ToolParameters` helpers |
@@ -22,7 +22,7 @@ Consuming the Valaiorp framework as compiled assemblies in a .NET 10 project.
 | `Valaiorp.Observability.dll` | Console logging, tracing, metrics |
 | `Valaiorp.Retry.dll` | Retry policies — auto-registered by Runtime |
 | `Valaiorp.Logging.dll` | Plan/step/run logging — auto-registered by Runtime |
-| `Valaiorp.LlmProviders.dll` | Anthropic, OpenAI, Ollama clients |
+| `Valaiorp.LlmProviders.dll` | `GenericLlmClient` + 7 built-in JSON profiles (Anthropic, OpenAI, Ollama, Gemini, Mistral, Cohere, NVIDIA) |
 | `Valaiorp.MultiAgent.dll` | Multi-agent registry and orchestration |
 | `Valaiorp.Escalation.dll` | Approval, override, and escalation handling |
 | `Valaiorp.Guardrails.dll` | 6 built-in safety guardrails — PII redaction, prompt injection, banned keywords, content length, tool scope, data classification |
@@ -54,7 +54,7 @@ Two enums + one call configures the entire framework:
 using Valaiorp.Configuration.Config;
 using Valaiorp.Core.Enums;
 
-var config = new AgenticAIConfig
+var config = new ValaiorpConfig
 {
     WorkflowType    = WorkflowType.AiAgent,       // Irpa | AiWorkflow | AiAgent | Agentic
     AiParticipation = AiParticipation.ObserveAndReact  // ObserveOnly | ObserveAndSuggest | ObserveAndReact
@@ -103,10 +103,13 @@ public sealed class MyExecutionContext : IExecutionContext
 ### 2. Build and run
 
 ```csharp
-using Valaiorp.Runtime;
+using Valaiorp.Runtime.Bootstrap;
+using Valaiorp.Configuration.Config;
 
-var config = new AgenticAIConfig { WorkflowType = WorkflowType.Irpa }.ApplyProfile();
+var config = new ValaiorpConfig { WorkflowType = WorkflowType.Irpa }.ApplyProfile();
 
+// RuntimeBuilder.Build() calls config.Validate(), registers all services,
+// and auto-registers all BasicTools — no manual setup needed.
 await using var runtime = RuntimeBuilder.Build(config);
 
 // Register your workflow planner
@@ -118,6 +121,13 @@ var result = await runtime.ExecuteAsync(new MyExecutionContext { UserId = "user-
 Console.WriteLine(result.IsSuccess
     ? $"Done in {result.ExecutionTime.TotalSeconds:F2}s"
     : $"Failed: {result.ErrorMessage}");
+```
+
+### Load config from file
+
+```csharp
+// valaiorp.json is deserialized into ValaiorpConfig — same shape as the code API
+await using var runtime = RuntimeBuilder.BuildFromFile("valaiorp.json");
 ```
 
 ---
@@ -355,7 +365,7 @@ IWorkQueue sharedQueue = new MyQueue();
 await using var bot = RuntimeBuilder.BuildBot(
     queueId:        "sap-invoices",
     botId:          "sap-bot",
-    config:         new AgenticAIConfig { WorkflowType = WorkflowType.Irpa }.ApplyProfile(),
+    config:         new ValaiorpConfig { WorkflowType = WorkflowType.Irpa }.ApplyProfile(),
     queue:          sharedQueue,
     maxConcurrency: 8,    // parallel items per machine — tools must be stateless or use scoped/thread-local state; avoid shared mutable fields
     maxAttempts:    3,    // before dead-letter
@@ -464,18 +474,17 @@ new Plan
 }
 ```
 
-Syntax: `${<StepName>.Results.<dot.path>}` — unresolved references emit a warning log entry (step name + missing key) and are left as-is in the input. Set `AgenticAIConfig.FailOnUnresolvedBindings = true` to treat them as hard errors instead.
+Syntax: `${<StepName>.Results.<dot.path>}` — unresolved references emit a warning log entry (step name + missing key) and are left as-is in the input. Set `ValaiorpConfig.FailOnUnresolvedBindings = true` to treat them as hard errors instead.
 
 ---
 
 ## Built-in Tools (BasicTools)
 
-Register all at once:
+`RuntimeBuilder.Build()` automatically calls `BasicToolsRegistry.RegisterAll()` — all built-in tools are available without any manual registration step. If you build the DI container directly without `RuntimeBuilder`, call it yourself:
 
 ```csharp
 using Valaiorp.BasicTools.Registries;
-var toolRegistry = runtime.GetService<ToolRegistry>();
-BasicToolsRegistry.RegisterAll(toolRegistry);
+BasicToolsRegistry.RegisterAll(provider.GetRequiredService<ToolRegistry>());
 ```
 
 All tools accept `IReadOnlyDictionary<string, object>` parameters.
@@ -620,23 +629,71 @@ Same `read` / `write` parameters. Read returns `{ content: "...", elementCount: 
 
 ### Windows UIAutomation Tool (`net10.0-windows` only)
 
-| Parameter | Values |
-|---|---|
-| `action` | `FindWindow` \| `ClickText` \| `ClickButton` \| `ClickElement` \| `GetText` \| `SetText` \| `GetTableContent` \| `Navigate` |
-| `element` | Window title or label |
-| `automationId` | UIA control ID |
-| `value` | Text to set |
+Tool ID: `windows-ui-automation`. Uses Windows UI Automation (UIA) — works on Win32, WPF, WinForms apps and browser address bars (Edge, Chrome, Firefox).
+
+Input format (pipe-delimited via `input` key): `Action|param1|param2`
+
+| Action | Format | Example |
+|---|---|---|
+| `FindWindow` | `FindWindow\|windowName` | `FindWindow\|SAP Logon` |
+| `Navigate` | `Navigate\|url[\|windowName]` | `Navigate\|https://example.com` |
+| `ClickText` | `ClickText\|elementName` | `ClickText\|Submit` |
+| `ClickButton` | `ClickButton\|buttonText` | `ClickButton\|OK` |
+| `ClickElement` | `ClickElement\|name[\|automationId]` | `ClickElement\|Login\|btnLogin` |
+| `GetText` | `GetText\|elementName` | `GetText\|txtResult` |
+| `SetText` | `SetText\|elementName\|value` | `SetText\|txtUsername\|admin` |
+| `GetTableContent` | `GetTableContent\|tableName` | `GetTableContent\|OrderGrid` |
+| `Screenshot` | `Screenshot[\|filePath]` | `Screenshot\|C:\screen.png` |
+| `WaitForElement` | `WaitForElement\|name[\|timeoutMs]` | `WaitForElement\|Loading...\|3000` |
+| `SelectOption` | `SelectOption\|elementName\|value` | `SelectOption\|cboCountry\|Canada` |
+| `SendKeys` | `SendKeys\|keys` | `SendKeys\|Enter` |
+| `GetAttribute` | `GetAttribute\|elementName\|attr` | `GetAttribute\|btnOK\|automationid` |
+
+Supported `GetAttribute` names: `name`, `automationid`, `controltype`, `isenabled`, `isvisible`, `helptext`, `value`, `classname`, `processid`.
+
+`SendKeys` recognises: `Enter`, `Tab`, `Esc`, `Backspace`, `Delete`, `Home`, `End`, `PageUp`, `PageDown`, `Up`, `Down`, `Left`, `Right`, `F1`–`F12`, or any printable character string.
 
 ```csharp
-{ ["action"] = "SetText",     ["automationId"] = "txtUsername", ["value"] = "admin" }
-{ ["action"] = "ClickButton", ["element"] = "Login" }
+// Pipe-delimited via "input" parameter
+{ ["input"] = "SetText|txtUsername|admin" }
+{ ["input"] = "ClickButton|Login" }
+{ ["input"] = "WaitForElement|Welcome|5000" }
+{ ["input"] = "Screenshot|C:\\Reports\\before.png" }
 ```
 
 ---
 
 ### Playwright Browser Tool (`PLAYWRIGHT_ENABLED` define)
 
-Same parameters as UIAutomation, backed by Chromium/Firefox/WebKit.
+Tool ID: `playwright-ui-automation`. Requires `Microsoft.Playwright` NuGet package — uncomment the `PackageReference` in [BasicTools/Valaiorp.BasicTools.csproj](BasicTools/Valaiorp.BasicTools.csproj) and add `PLAYWRIGHT_ENABLED` to your compile constants. Launches a Chromium browser (non-headless by default).
+
+Input format (pipe-delimited via `input` key): `Action|param1|param2`
+
+| Action | Format | Example |
+|---|---|---|
+| `FindWindow` | `FindWindow\|pageTitle` | `FindWindow\|GitHub` |
+| `Navigate` | `Navigate\|url` | `Navigate\|https://example.com` |
+| `ClickText` | `ClickText\|text` | `ClickText\|Submit` |
+| `ClickButton` | `ClickButton\|buttonText` | `ClickButton\|Login` |
+| `ClickElement` | `ClickElement\|cssSelector` | `ClickElement\|#submit-btn` |
+| `GetText` | `GetText\|cssSelector` | `GetText\|.result` |
+| `SetText` | `SetText\|cssSelector\|value` | `SetText\|#username\|admin` |
+| `GetTableContent` | `GetTableContent\|cssSelector` | `GetTableContent\|table.data` |
+| `Screenshot` | `Screenshot[\|filePath]` | `Screenshot\|output.png` |
+| `WaitForElement` | `WaitForElement\|text[\|timeoutMs]` | `WaitForElement\|Loading...\|3000` |
+| `SelectOption` | `SelectOption\|label\|value` | `SelectOption\|Country\|Canada` |
+| `SendKeys` | `SendKeys\|keys` | `SendKeys\|Enter` |
+| `GetAttribute` | `GetAttribute\|cssSelector\|attr` | `GetAttribute\|#link\|href` |
+| `EvaluateJs` | `EvaluateJs\|script` | `EvaluateJs\|document.title` |
+
+```csharp
+{ ["input"] = "Navigate|https://myapp.internal" }
+{ ["input"] = "SetText|#username|admin" }
+{ ["input"] = "ClickButton|Sign In" }
+{ ["input"] = "WaitForElement|Dashboard|5000" }
+{ ["input"] = "Screenshot|C:\\Reports\\after-login.png" }
+{ ["input"] = "EvaluateJs|document.querySelector('#token').value" }
+```
 
 ---
 
@@ -941,11 +998,13 @@ Two expansion syntaxes are available in plan JSON:
 | `${StepName.Results.Field}` | At runtime, just before each step executes | Previous step output |
 | `{{ENV_VAR_NAME}}` | Before the plan is loaded, during pre-execution template expansion | Environment variables |
 
-`${…}` dot-paths descend into nested objects: `${Step.Results.data.items}`. Unresolved `${…}` references emit a warning and are left as-is; set `AgenticAIConfig.FailOnUnresolvedBindings = true` to error instead. `{{…}}` references that have no matching environment variable are left as-is without warning.
+`${…}` dot-paths descend into nested objects: `${Step.Results.data.items}`. Unresolved `${…}` references emit a warning and are left as-is; set `ValaiorpConfig.FailOnUnresolvedBindings = true` to error instead. `{{…}}` references that have no matching environment variable are left as-is without warning.
 
 ---
 
 ## LLM Providers
+
+A single `GenericLlmClient` handles all providers via JSON profiles. Seven profiles are built in.
 
 ```csharp
 using Valaiorp.Configuration.Models;
@@ -953,7 +1012,7 @@ using Valaiorp.LlmProviders.DependencyInjection;
 
 builder.Services.AddLlmClient(new LlmConfig
 {
-    Provider     = "anthropic",           // "anthropic" | "openai" | "ollama"
+    Provider     = "anthropic",   // built-in: "anthropic" | "openai" | "ollama" | "gemini" | "mistral" | "cohere" | "nvidia"
     ModelId      = "claude-sonnet-4-6",
     MaxTokens    = 4096,
     Temperature  = 0.7f,
@@ -962,6 +1021,21 @@ builder.Services.AddLlmClient(new LlmConfig
 ```
 
 API key resolution order: `ApiKey` (literal) → `ApiKeyEnvVar` → `ApiKeyFile` → `{PROVIDER}_API_KEY` env var.
+
+### Adding a custom provider (no C# required)
+
+Create a JSON profile and call `AddLlmClientFromProfile`:
+
+```csharp
+builder.Services.AddLlmClientFromProfile("my-provider.json", new LlmConfig
+{
+    Provider     = "myprovider",
+    ModelId      = "my-model-id",
+    ApiKeyEnvVar = "MYPROVIDER_API_KEY"
+});
+```
+
+The profile file mirrors the built-in profiles (see `LlmProviders/Profiles/*.json` for examples): `defaultBaseUrl`, `endpoint`, `authHeader`, `requestBody`, `responseMapping`.
 
 ### Calling the LLM directly
 
@@ -1061,10 +1135,10 @@ Commit / Return
 
 ### Configuration (auto-wired by RuntimeBuilder)
 
-Set `AgenticAIConfig.Guardrails` and the runtime wires all enabled guardrails automatically:
+Set `ValaiorpConfig.Guardrails` and the runtime wires all enabled guardrails automatically:
 
 ```csharp
-var config = new AgenticAIConfig
+var config = new ValaiorpConfig
 {
     WorkflowType = WorkflowType.AiAgent,
     Guardrails = new GuardrailConfig
@@ -1331,14 +1405,16 @@ builder.Services.AddSingleton<IRetryStrategy>(_ =>
 
 ## Memory
 
+All three memory stores default to JSONL file-backed implementations (directory: `PersistenceConfig.MemoryDirectory`, default `"memory"`). State survives process restarts out of the box — no database required.
+
 ```csharp
 var memory = runtime.GetService<MemoryManager>();
 
-// Short-term (session-scoped, in-memory)
+// Short-term (session-scoped, JSONL file-backed by default)
 await memory.ShortTerm.SetAsync("step", "login", ct);
 var step = await memory.ShortTerm.GetAsync<string>("step", ct);
 
-// Long-term (persistent — default in-memory, replace ILongTermMemory for SQL/vector)
+// Long-term (persistent, JSONL file-backed by default)
 await memory.LongTerm.StoreLogAsync(new ExecutionLog
 {
     ContextId = context.Id,
@@ -1348,34 +1424,46 @@ await memory.LongTerm.StoreLogAsync(new ExecutionLog
 var logs = await memory.LongTerm.RetrieveLogsAsync(context.Id, ct);
 ```
 
-To persist long-term memory across process restarts, swap the default in-memory implementation:
+To swap to a different backing store, replace the registered implementations after calling `AddAgenticAIRuntime`:
 
 ```csharp
+// Redis-backed short-term memory
+services.AddSingleton<IShortTermMemory, RedisShortTermMemory>();
+
 // SQL-backed long-term memory
-builder.Services.AddSingleton<ILongTermMemory, SqlLongTermMemory>();
+services.AddSingleton<ILongTermMemory, SqlLongTermMemory>();
 
 // Vector-backed long-term memory (semantic search over logs)
-builder.Services.AddSingleton<ILongTermMemory, VectorLongTermMemory>();
+services.AddSingleton<ILongTermMemory, VectorLongTermMemory>();
 ```
 
 ---
 
 ## Execution Logging
 
-Automatic — three entries per execution.
+Automatic — three entries written per execution to JSONL files (directory: `PersistenceConfig.LogDirectory`, default `"logs"`). This happens automatically; no configuration required.
 
-| Event | Default storage key |
-|-------|-------------------|
-| Plan  | `execution_log_plan_{planId}` |
-| Step  | `execution_log_step_{stepId}` |
-| Run   | `execution_log_run_{executionId}` |
+| Event | Trigger |
+|-------|---------|
+| Plan  | After plan creation |
+| Step  | After each step completes |
+| Run   | After executor finishes |
 
-Switch to file-based JSONL logging:
+### Also log to SQL
+
+Call `AddSqlPersistence` after `AddAgenticAIRuntime` to write logs to both JSONL files and SQL simultaneously:
 
 ```csharp
-builder.Services.AddSingleton<IExecutionLogger>(
-    _ => new ExternalExecutionLogger(logDirectory: "logs"));
+using Valaiorp.Runtime.DependencyInjection;
+
+services.AddAgenticAIRuntime(config)
+        .AddSqlPersistence(() => new SqlConnection(connectionString));
+
+// Create the SQL schema once at startup (idempotent)
+await provider.GetRequiredService<SqlExecutionLogger>().CreateSchemaAsync();
 ```
+
+Works with any ADO.NET provider — `SqlConnection`, `NpgsqlConnection`, `SqliteConnection`, etc.
 
 ---
 
@@ -1383,7 +1471,7 @@ builder.Services.AddSingleton<IExecutionLogger>(
 
 ```csharp
 // Program.cs
-builder.Services.AddAgenticAIRuntime(new AgenticAIConfig
+builder.Services.AddAgenticAIRuntime(new ValaiorpConfig
 {
     WorkflowType = WorkflowType.Irpa
 }.ApplyProfile());
@@ -1403,6 +1491,6 @@ public class BotHostedService(AgentRuntime runtime) : BackgroundService
 
 - .NET 10 runtime
 - `Microsoft.Extensions.DependencyInjection` (transitive via `Valaiorp.Runtime`)
-- Windows only: UIAutomation tools require `net10.0-windows` TFM
-- Optional: Playwright NuGet + `PLAYWRIGHT_ENABLED` compile constant for browser automation
-- Optional: ADO.NET provider NuGet (e.g. `Microsoft.Data.SqlClient`, `Npgsql`, `Microsoft.Data.Sqlite`) for `SqlWorkQueue`
+- Windows only: `windows-ui-automation` tool requires `net10.0-windows` TFM
+- Optional: `Microsoft.Playwright` NuGet + `PLAYWRIGHT_ENABLED` compile constant for Playwright browser automation
+- Optional: ADO.NET provider NuGet (e.g. `Microsoft.Data.SqlClient`, `Npgsql`, `Microsoft.Data.Sqlite`) for `SqlWorkQueue` and `AddSqlPersistence`

@@ -1,6 +1,7 @@
 namespace Valaiorp.Tools.Registries
 {
     using System.Collections.Concurrent;
+    using System.Text;
     using Valaiorp.Tools.Contracts;
 
     public sealed class ToolRegistry
@@ -27,6 +28,23 @@ namespace Valaiorp.Tools.Registries
         public void Clear()
         {
             _tools.Clear();
+        }
+
+        /// <summary>
+        /// Returns a formatted list of all registered tools suitable for inclusion in an
+        /// LLM system prompt. Agent authors call this to tell the LLM which tools are available
+        /// without re-implementing tool discovery themselves.
+        ///
+        /// Format per tool:
+        ///   - {id}: {description}
+        /// </summary>
+        public string FormatForSystemPrompt()
+        {
+            if (_tools.IsEmpty) return string.Empty;
+            var sb = new StringBuilder();
+            foreach (var tool in _tools.Values)
+                sb.AppendLine($"- {tool.Id}: {tool.Description}");
+            return sb.ToString().TrimEnd();
         }
     }
 }

@@ -4,18 +4,26 @@
         <name>Valaiorp.Configuration</name>
     </assembly>
     <members>
-        <member name="P:Valaiorp.Configuration.Config.AgenticAIConfig.WorkflowType">
+        <member name="P:Valaiorp.Configuration.Config.ValaiorpConfig.WorkflowType">
             <summary>The type of workflow: Irpa, AiWorkflow, AiAgent, or Agentic.</summary>
         </member>
-        <member name="P:Valaiorp.Configuration.Config.AgenticAIConfig.AiParticipation">
+        <member name="P:Valaiorp.Configuration.Config.ValaiorpConfig.AiParticipation">
             <summary>How much the AI is allowed to act. Ignored for Irpa workflows.</summary>
         </member>
-        <member name="M:Valaiorp.Configuration.Config.AgenticAIConfig.ApplyProfile">
-            <summary>
-            Applies WorkflowType + AiParticipation presets, filling Planner.Type and Autonomy
-            with the right values for the chosen workflow profile.
-            Manual overrides set after this call take precedence.
-            </summary>
+        <member name="M:Valaiorp.Configuration.Config.ValaiorpConfig.Validate">
+             <summary>
+             Applies WorkflowType + AiParticipation presets, filling Planner.Type and Autonomy
+             with the right values for the chosen workflow profile.
+            
+             Fields you explicitly changed from their defaults in valaiorp.json are preserved:
+             the method compares each Autonomy field against the out-of-box defaults and re-applies
+             anything that was explicitly overridden. To unconditionally use the profile's Autonomy,
+             set Autonomy to <c>new AutonomyConfig()</c> before calling this method.
+             </summary>
+             <summary>
+             Validates the configuration and throws <see cref="T:System.InvalidOperationException"/>
+             listing all violations if any are found. Call this at startup before registering services.
+             </summary>
         </member>
         <member name="T:Valaiorp.Configuration.Loader.ValaiorpConfigurationLoader">
              <summary>
@@ -128,6 +136,9 @@
         <member name="P:Valaiorp.Configuration.Models.PersistenceConfig.QueueDirectory">
             <summary>Directory for JSONL queue files. Used by the default JsonlWorkQueue.</summary>
         </member>
+        <member name="P:Valaiorp.Configuration.Models.PersistenceConfig.MemoryDirectory">
+            <summary>Directory for file-backed short-term and long-term memory stores.</summary>
+        </member>
         <member name="P:Valaiorp.Configuration.Models.PersistenceConfig.ConnectionString">
             <summary>
             Optional SQL connection string. When set, host app should call
@@ -138,7 +149,7 @@
         <member name="T:Valaiorp.Configuration.Models.WorkflowProfile">
             <summary>
             Maps (WorkflowType, AiParticipation) to concrete planner and autonomy settings.
-            Call AgenticAIConfig.ApplyProfile() to apply these presets automatically.
+            Call ValaiorpConfig.ApplyProfile() to apply these presets automatically.
             </summary>
         </member>
         <member name="T:Valaiorp.Configuration.Providers.DefaultApiKeyProvider">

@@ -5,23 +5,53 @@
     </assembly>
     <members>
         <member name="T:Valaiorp.LlmProviders.Clients.GenericLlmClient">
+             <summary>
+             Single HTTP-based LLM client driven by a <see cref="T:Valaiorp.LlmProviders.Profiles.LlmProviderProfile"/>.
+             Built-in profiles: anthropic, openai, ollama (loaded via LlmProviderProfileLoader).
+             Add any new provider by supplying a profile JSON — no C# code required.
+            
+             API key is resolved lazily on the first call to <see cref="M:Valaiorp.LlmProviders.Clients.GenericLlmClient.CompleteAsync(Valaiorp.Core.Contracts.PromptContext,System.Threading.CancellationToken)"/> so
+             DI registration remains synchronous and vault-backed key providers never block
+             the startup thread.
+             </summary>
+        </member>
+        <member name="M:Valaiorp.LlmProviders.Clients.GenericLlmClient.#ctor(Valaiorp.LlmProviders.Profiles.LlmProviderProfile,System.String,System.Int32,System.Single,System.String,System.String,System.Net.Http.HttpClient)">
             <summary>
-            Single HTTP-based LLM client driven by a <see cref="T:Valaiorp.LlmProviders.Profiles.LlmProviderProfile"/>.
-            Built-in profiles: anthropic, openai, ollama (loaded via LlmProviderProfileLoader).
-            Add any new provider by supplying a profile JSON — no C# code required.
+            Convenience constructor with a pre-resolved key.
+            Prefer the factory overload when the key comes from a secrets vault.
             </summary>
+        </member>
+        <member name="M:Valaiorp.LlmProviders.Clients.GenericLlmClient.#ctor(Valaiorp.LlmProviders.Profiles.LlmProviderProfile,System.String,System.Int32,System.Single,System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task{System.String}},System.String,System.Net.Http.HttpClient)">
+            <summary>
+            Factory constructor — API key is resolved asynchronously on the first LLM call.
+            Use this with vault-backed <see cref="T:Valaiorp.Core.Contracts.IApiKeyProvider"/> implementations.
+            </summary>
+        </member>
+        <member name="M:Valaiorp.LlmProviders.Clients.GenericLlmClient.ParseToolCalls(System.Text.Json.JsonElement,System.String)">
+             <summary>
+             Detects and parses native tool/function calls from both Anthropic and OpenAI response shapes.
+            
+             Anthropic: stop_reason="tool_use", root.content[] contains items with type="tool_use"
+               { "id": "toolu_xxx", "type": "tool_use", "name": "tool_name", "input": { ... } }
+            
+             OpenAI: choices[0].finish_reason="tool_calls", choices[0].message.tool_calls[]
+               { "id": "call_xxx", "type": "function", "function": { "name": "...", "arguments": "{...}" } }
+             </summary>
         </member>
         <member name="M:Valaiorp.LlmProviders.DependencyInjection.LlmProviderServiceCollectionExtensions.AddLlmClient(Microsoft.Extensions.DependencyInjection.IServiceCollection,Valaiorp.Configuration.Models.LlmConfig)">
             <summary>
             Registers an <see cref="T:Valaiorp.Core.Contracts.ILlmClient"/> from a built-in provider profile.
             Supported providers: "anthropic", "openai", "ollama", "gemini", "mistral", "cohere".
-            API key resolution order: ApiKey (literal) → ApiKeyEnvVar → ApiKeyFile → "{PROVIDER}_API_KEY" env var.
+            API key is resolved asynchronously on the first LLM call — DI registration is
+            fully synchronous and safe in all hosting environments.
+            Resolution order: ApiKey (literal) → ApiKeyEnvVar → ApiKeyFile → "{PROVIDER}_API_KEY" env var.
             </summary>
         </member>
         <member name="M:Valaiorp.LlmProviders.DependencyInjection.LlmProviderServiceCollectionExtensions.AddLlmClient(Microsoft.Extensions.DependencyInjection.IServiceCollection,Valaiorp.Configuration.Models.LlmConfig,Valaiorp.Core.Contracts.IApiKeyProvider)">
             <summary>
             Registers an <see cref="T:Valaiorp.Core.Contracts.ILlmClient"/> using a custom <see cref="T:Valaiorp.Core.Contracts.IApiKeyProvider"/>.
             Plug in Azure Key Vault, AWS Secrets Manager, HashiCorp Vault, or any credential backend.
+            The provider is called asynchronously on the first LLM call, not at startup.
             </summary>
         </member>
         <member name="M:Valaiorp.LlmProviders.DependencyInjection.LlmProviderServiceCollectionExtensions.AddLlmClientFromProfile(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String,Valaiorp.Configuration.Models.LlmConfig,Valaiorp.Core.Contracts.IApiKeyProvider)">

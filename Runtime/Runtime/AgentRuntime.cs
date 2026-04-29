@@ -9,6 +9,7 @@ namespace Valaiorp.Runtime
     using Valaiorp.Execution.Transactions;
     using Valaiorp.Knowledge.Resolvers;
     using Valaiorp.Memory.Contracts;
+    using Valaiorp.Observability.Contracts;
     using Valaiorp.Observability.Tracing;
     using Valaiorp.Planner.Orchestration;
     using Valaiorp.Policy.Contracts;
@@ -28,10 +29,11 @@ namespace Valaiorp.Runtime
         private readonly IPolicyEngine _policyEngine;
         private readonly IGuardrailPipeline _guardrails;
         private readonly IExecutionLogger _executionLogger;
-        private readonly AgenticAIConfig _config;
+        private readonly ValaiorpConfig _config;
         private readonly IShortTermMemory _shortTermMemory;
         private readonly ILongTermMemory _longTermMemory;
         private readonly KnowledgeProviderResolver _knowledgeResolver;
+        private readonly ILogger _logger;
 
         private ExecutionMode _currentMode = ExecutionMode.Sequential;
         private bool _disposed;
@@ -47,10 +49,11 @@ namespace Valaiorp.Runtime
             _policyEngine = serviceProvider.GetRequiredService<IPolicyEngine>();
             _guardrails   = serviceProvider.GetRequiredService<IGuardrailPipeline>();
             _executionLogger = serviceProvider.GetRequiredService<IExecutionLogger>();
-            _config = serviceProvider.GetRequiredService<AgenticAIConfig>();
+            _config = serviceProvider.GetRequiredService<ValaiorpConfig>();
             _shortTermMemory = serviceProvider.GetRequiredService<IShortTermMemory>();
             _longTermMemory = serviceProvider.GetRequiredService<ILongTermMemory>();
             _knowledgeResolver = serviceProvider.GetRequiredService<KnowledgeProviderResolver>();
+            _logger = serviceProvider.GetRequiredService<ILogger>();
         }
 
         public ExecutionMode CurrentMode
@@ -106,6 +109,14 @@ namespace Valaiorp.Runtime
                     foreach (var step in plan.Steps)
                         unit.Graph.AddNode(step);
 
+                    // Wire sequential ordering: each non-parallel step depends on its predecessor,
+                    // guaranteeing variable bindings resolve after the producing step finishes.
+                    for (int i = 1; i < plan.Steps.Count; i++)
+                    {
+                        if (plan.Steps[i].Mode != Core.Enums.ExecutionMode.Parallel)
+                            unit.Graph.AddDependency(plan.Steps[i].Id, plan.Steps[i - 1].Id);
+                    }
+
                     _transactionManager.BeginTransaction(unit);
                     try
                     {
@@ -114,17 +125,28 @@ namespace Valaiorp.Runtime
                         foreach (var node in unit.Graph.Nodes.Values)
                             await _executionLogger.LogStepAsync(node, enriched, token).ConfigureAwait(false);
 
+                        var stepOutputs = unit.Graph.Nodes.Values
+                            .Where(n => n.Result != null)
+                            .ToDictionary(
+                                n => n.Step.Name,
+                                n => (object)n.Result!.Outputs);
+
                         var execResult = new ExecutionResult(
                             enriched.Id, enriched.Id,
                             unit.Status == ExecutionStatus.Completed,
                             unit.Exception?.Message,
-                            unit.Exception);
+                            unit.Exception,
+                            stepOutputs,
+                            unit.CompletedAt.GetValueOrDefault(DateTimeOffset.UtcNow) - unit.StartedAt);
 
                         await _executionLogger.LogRunAsync(unit, enriched, token).ConfigureAwait(false);
 
-                        // Guardrail — output check
+                        // Guardrail — output check against actual tool output content
                         var outputContent = execResult.IsSuccess
-                            ? string.Join("; ", unit.Graph.Nodes.Values.Select(n => n.Step.Name))
+                            ? System.Text.Json.JsonSerializer.Serialize(
+                                unit.Graph.Nodes.Values
+                                    .Where(n => n.Result != null)
+                                    .ToDictionary(n => n.Step.Name, n => n.Result!.Outputs))
                             : execResult.ErrorMessage ?? string.Empty;
                         if (!string.IsNullOrEmpty(outputContent))
                         {
@@ -132,7 +154,7 @@ namespace Valaiorp.Runtime
                                 .EvaluateOutputAsync(enriched, outputContent, token).ConfigureAwait(false);
                             if (!gr.IsAllowed)
                             {
-                                await _transactionManager.RollbackAsync(token).ConfigureAwait(false);
+                                await _transactionManager.RollbackAsync(unit, token).ConfigureAwait(false);
                                 return new ExecutionResult(enriched.Id, enriched.Id, false,
                                     $"[Guardrail:{gr.GuardrailId}] {gr.Reason}");
                             }
@@ -142,21 +164,25 @@ namespace Valaiorp.Runtime
                             .EvaluatePostExecutionAsync(execResult, token).ConfigureAwait(false);
                         if (!postPolicyResult.IsAllowed)
                         {
-                            await _transactionManager.RollbackAsync(token).ConfigureAwait(false);
+                            await _transactionManager.RollbackAsync(unit, token).ConfigureAwait(false);
                             return new ExecutionResult(enriched.Id, enriched.Id, false, postPolicyResult.Reason);
                         }
 
-                        _transactionManager.Commit();
+                        _transactionManager.Commit(unit);
 
-                        // Persist execution log to long-term memory
+                        // Persist execution log to long-term memory (best-effort — failure does not abort)
                         await PersistExecutionToMemoryAsync(enriched, execResult, token)
                             .ConfigureAwait(false);
 
                         return execResult;
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        await _transactionManager.RollbackAsync(token).ConfigureAwait(false);
+                        unit.Exception = ex;
+                        unit.Status = ExecutionStatus.Failed;
+                        unit.CompletedAt = DateTimeOffset.UtcNow;
+                        await _transactionManager.RollbackAsync(unit, token).ConfigureAwait(false);
+                        await _executionLogger.LogRunAsync(unit, enriched, token).ConfigureAwait(false);
                         throw;
                     }
                 },
@@ -204,8 +230,9 @@ namespace Valaiorp.Runtime
             var ragContext = context.Prompt.RagContext;
             var memoryContext = context.Prompt.MemoryContext;
 
-            // RAG: query the default knowledge provider if available and the user hasn't pre-loaded context
-            if (ragContext.Count == 0 && !string.IsNullOrWhiteSpace(context.Prompt.UserPrompt))
+            // RAG: query the default knowledge provider only if one is actually registered
+            if (ragContext.Count == 0 && !string.IsNullOrWhiteSpace(context.Prompt.UserPrompt)
+                && _knowledgeResolver.GetDefaultProvider() != null)
             {
                 try
                 {
@@ -216,20 +243,31 @@ namespace Valaiorp.Runtime
                         ct: ct).ConfigureAwait(false);
                     ragContext = [.. results];
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // No knowledge provider registered — skip silently
+                    await _logger.LogAsync(LogLevel.Warning,
+                        $"[AgentRuntime] RAG enrichment failed for session '{context.SessionId}': {ex.Message}",
+                        correlationId: context.SessionId, ct: ct).ConfigureAwait(false);
                 }
             }
 
-            // Memory: retrieve recent entries stored for this session
+            // Memory: retrieve recent entries stored for this session (best-effort)
             if (memoryContext.Count == 0)
             {
-                var sessionKey = $"memory:{context.SessionId}";
-                var stored = await _shortTermMemory
-                    .GetAsync<List<string>>(sessionKey, ct).ConfigureAwait(false);
-                if (stored?.Count > 0)
-                    memoryContext = stored;
+                try
+                {
+                    var sessionKey = $"memory:{context.SessionId}";
+                    var stored = await _shortTermMemory
+                        .GetAsync<List<string>>(sessionKey, ct).ConfigureAwait(false);
+                    if (stored?.Count > 0)
+                        memoryContext = stored;
+                }
+                catch (Exception ex)
+                {
+                    await _logger.LogAsync(LogLevel.Warning,
+                        $"[AgentRuntime] Memory retrieval failed for session '{context.SessionId}': {ex.Message}",
+                        correlationId: context.SessionId, ct: ct).ConfigureAwait(false);
+                }
             }
 
             if (ragContext == context.Prompt.RagContext && memoryContext == context.Prompt.MemoryContext)
@@ -262,21 +300,32 @@ namespace Valaiorp.Runtime
             IExecutionResult result,
             CancellationToken ct)
         {
-            var sessionKey = $"memory:{context.SessionId}";
-            var existing = await _shortTermMemory
-                .GetAsync<List<string>>(sessionKey, ct).ConfigureAwait(false) ?? [];
+            try
+            {
+                var sessionKey = $"memory:{context.SessionId}";
+                var existing = await _shortTermMemory
+                    .GetAsync<List<string>>(sessionKey, ct).ConfigureAwait(false) ?? [];
 
-            existing.Add($"[{DateTimeOffset.UtcNow:u}] {context.Prompt?.UserPrompt} → {(result.IsSuccess ? "success" : result.ErrorMessage)}");
+                existing.Add($"[{DateTimeOffset.UtcNow:u}] {context.Prompt?.UserPrompt} → {(result.IsSuccess ? "success" : result.ErrorMessage)}");
 
-            await _shortTermMemory.SetAsync(sessionKey, existing, ct).ConfigureAwait(false);
+                await _shortTermMemory.SetAsync(sessionKey, existing, ct).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                await _logger.LogAsync(LogLevel.Warning,
+                    $"[AgentRuntime] Memory persistence failed for session '{context.SessionId}': {ex.Message}",
+                    correlationId: context.SessionId, ct: ct).ConfigureAwait(false);
+            }
         }
 
         // ── Mode switching ────────────────────────────────────────────────────────
 
         public void SwitchMode(ExecutionMode mode)
         {
-            if (_config.Execution.Mode != mode)
-                throw new InvalidOperationException($"Mode {mode} is not allowed by configuration.");
+            if (_config.Execution.Mode == ExecutionMode.Sequential && mode == ExecutionMode.Parallel)
+                throw new InvalidOperationException(
+                    "Cannot switch to Parallel mode: configuration was set to Sequential. " +
+                    "Set Execution.Mode = \"Parallel\" (or \"Hybrid\") in valaiorp.json to enable runtime mode switching.");
             _currentMode = mode;
         }
 

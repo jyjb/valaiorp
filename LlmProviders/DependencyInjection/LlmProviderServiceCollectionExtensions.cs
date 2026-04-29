@@ -12,7 +12,9 @@ namespace Valaiorp.LlmProviders.DependencyInjection
         /// <summary>
         /// Registers an <see cref="ILlmClient"/> from a built-in provider profile.
         /// Supported providers: "anthropic", "openai", "ollama", "gemini", "mistral", "cohere".
-        /// API key resolution order: ApiKey (literal) → ApiKeyEnvVar → ApiKeyFile → "{PROVIDER}_API_KEY" env var.
+        /// API key is resolved asynchronously on the first LLM call — DI registration is
+        /// fully synchronous and safe in all hosting environments.
+        /// Resolution order: ApiKey (literal) → ApiKeyEnvVar → ApiKeyFile → "{PROVIDER}_API_KEY" env var.
         /// </summary>
         public static IServiceCollection AddLlmClient(
             this IServiceCollection services,
@@ -22,24 +24,24 @@ namespace Valaiorp.LlmProviders.DependencyInjection
         /// <summary>
         /// Registers an <see cref="ILlmClient"/> using a custom <see cref="IApiKeyProvider"/>.
         /// Plug in Azure Key Vault, AWS Secrets Manager, HashiCorp Vault, or any credential backend.
+        /// The provider is called asynchronously on the first LLM call, not at startup.
         /// </summary>
         public static IServiceCollection AddLlmClient(
             this IServiceCollection services,
             LlmConfig config,
             IApiKeyProvider keyProvider)
         {
-            var apiKey = keyProvider
-                .GetApiKeyAsync($"{config.Provider.ToUpperInvariant()}_API_KEY")
-                .GetAwaiter().GetResult();
-
             var profile = LlmProviderProfileLoader.LoadBuiltIn(config.Provider);
+
+            // Pass a factory so the key is resolved async on first use — no GetAwaiter().GetResult().
+            var keyName = $"{config.Provider.ToUpperInvariant()}_API_KEY";
             ILlmClient client = new GenericLlmClient(
                 profile,
                 config.ModelId,
                 config.MaxTokens,
                 config.Temperature,
-                apiKey,
-                config.BaseUrl);
+                apiKeyFactory: ct => keyProvider.GetApiKeyAsync(keyName, ct),
+                baseUrl: config.BaseUrl);
 
             return services.AddSingleton<ILlmClient>(client);
         }
@@ -56,18 +58,16 @@ namespace Valaiorp.LlmProviders.DependencyInjection
             IApiKeyProvider? keyProvider = null)
         {
             keyProvider ??= new DefaultApiKeyProvider(config);
-            var apiKey = keyProvider
-                .GetApiKeyAsync($"{config.Provider.ToUpperInvariant()}_API_KEY")
-                .GetAwaiter().GetResult();
-
             var profile = LlmProviderProfileLoader.LoadFromFile(profileFilePath);
+            var keyName = $"{config.Provider.ToUpperInvariant()}_API_KEY";
+
             ILlmClient client = new GenericLlmClient(
                 profile,
                 config.ModelId,
                 config.MaxTokens,
                 config.Temperature,
-                apiKey,
-                config.BaseUrl);
+                apiKeyFactory: ct => keyProvider.GetApiKeyAsync(keyName, ct),
+                baseUrl: config.BaseUrl);
 
             return services.AddSingleton<ILlmClient>(client);
         }

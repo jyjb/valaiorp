@@ -84,6 +84,9 @@ namespace Valaiorp.Execution.Models
         public bool AiUsed { get; set; }
         public TokenUsage? LlmTokens { get; set; }
 
+        /// <summary>Wall-clock time at which the node began executing. Set by ParallelExecutor.</summary>
+        public DateTimeOffset? ExecutedAt { get; set; }
+
         public TaskNode(PlanStep step)
         {
             Step = step;

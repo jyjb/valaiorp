@@ -11,6 +11,11 @@
       "description": "Auto-generated plan ID. Leave blank — runtime sets this.",
       "readOnly": true
     },
+    "version": {
+      "type": "string",
+      "description": "Plan schema version.",
+      "default": "1.0"
+    },
     "contextId": {
       "type": "string",
       "description": "Execution context ID. Set automatically by ManualPlanner at runtime."
@@ -21,11 +26,84 @@
       "enum": ["deterministic", "semiDeterministic", "nonDeterministic"],
       "default": "deterministic"
     },
+    "autonomyLevel": {
+      "type": "number",
+      "description": "Degree of autonomous decision-making permitted (0.0 = fully supervised, 1.0 = fully autonomous).",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "default": 0.0
+    },
+    "planner": {
+      "type": "object",
+      "description": "Information about the planner that produced this plan.",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Planner type (Reactive, Deliberative, Hierarchical, LlmBased, AutonomyAware, Manual).",
+          "enum": ["none", "reactive", "deliberative", "hierarchical", "llmBased", "autonomyAware", "manual"]
+        },
+        "planningTokens": {
+          "type": "object",
+          "description": "LLM token usage during planning (only present for AI planners).",
+          "properties": {
+            "inputTokens":  { "type": "integer" },
+            "outputTokens": { "type": "integer" },
+            "totalTokens":  { "type": "integer" },
+            "modelId":      { "type": "string" }
+          }
+        }
+      }
+    },
+    "governance": {
+      "type": "object",
+      "description": "Policy and risk controls for this plan.",
+      "properties": {
+        "policyChecks": {
+          "type": "array",
+          "description": "Policy check gates to apply (e.g. PreExecution, PostExecution).",
+          "items": { "type": "string" },
+          "default": ["PreExecution", "PostExecution"]
+        },
+        "requiresApproval": {
+          "type": "boolean",
+          "description": "Whether a human must approve this plan before execution.",
+          "default": false
+        },
+        "riskScore": {
+          "type": "number",
+          "description": "Computed risk score (0.0 = no risk, 1.0 = highest risk).",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "default": 0.0
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Human-readable plan metadata.",
+      "properties": {
+        "description": { "type": "string", "description": "What this plan does." },
+        "author":       { "type": "string", "description": "Who or what authored the plan." }
+      }
+    },
     "steps": {
       "type": "array",
       "description": "Ordered list of execution steps.",
       "minItems": 1,
       "items": { "$ref": "#/definitions/PlanStep" }
+    },
+    "workflowState": {
+      "type": "object",
+      "description": "Shared mutable state available to all steps via context.WorkflowState.",
+      "additionalProperties": true
+    },
+    "dependencies": {
+      "type": "object",
+      "description": "Tools and modules this plan requires.",
+      "properties": {
+        "tools":   { "type": "array", "items": { "type": "string" } },
+        "modules": { "type": "array", "items": { "type": "string" } }
+      }
     }
   },
 
@@ -48,6 +126,12 @@
           "type": "string",
           "description": "Human-readable description of what this step does."
         },
+        "type": {
+          "type": "string",
+          "description": "Step type: Tool, Module, or Agent.",
+          "enum": ["Tool", "Module", "Agent"],
+          "default": "Tool"
+        },
         "toolId": {
           "type": "string",
           "description": "ID of the tool or module to execute. Must match a registered tool/module ID.",
@@ -67,6 +151,12 @@
           "enum": ["sequential", "parallel", "hybrid"],
           "default": "sequential"
         },
+        "determinism": {
+          "type": "string",
+          "description": "Determinism level for this specific step.",
+          "enum": ["deterministic", "semiDeterministic", "nonDeterministic"],
+          "default": "deterministic"
+        },
         "priority": {
           "type": "integer",
           "description": "Execution priority (higher = earlier in parallel batches).",
@@ -75,10 +165,94 @@
         "inputs": {
           "type": "object",
           "description": "Key-value parameters passed to the tool. Values can be strings, numbers, booleans, arrays, or ${StepName.Results.Field} references.",
+          "additionalProperties": true
+        },
+        "expectedOutputs": {
+          "type": "object",
+          "description": "Typed output constraints used for post-condition validation. Use $type, $min, $max to declare expectations.",
           "additionalProperties": true,
           "example": {
-            "operation": "read",
-            "filePath": "C:\\Data\\config.json"
+            "statusCode": { "$type": "int", "$min": 200, "$max": 299 },
+            "body":        { "$type": "List<Object>" }
+          }
+        },
+        "errorHandling": {
+          "type": "object",
+          "description": "Retry, circuit-breaker, and fallback configuration for this step.",
+          "properties": {
+            "retryPolicy": {
+              "type": "object",
+              "properties": {
+                "maxAttempts": { "type": "integer", "default": 3 },
+                "backoff": {
+                  "type": "object",
+                  "properties": {
+                    "initialDelayMs": { "type": "integer", "default": 100 },
+                    "maxDelayMs":     { "type": "integer", "default": 10000 },
+                    "multiplier":     { "type": "number",  "default": 2.0 }
+                  }
+                },
+                "circuitBreaker": {
+                  "type": "object",
+                  "properties": {
+                    "failureThreshold": { "type": "integer", "default": 5 },
+                    "resetTimeoutMs":   { "type": "integer", "default": 30000 }
+                  }
+                }
+              }
+            },
+            "fallback": {
+              "type": "object",
+              "properties": {
+                "enabled": { "type": "boolean", "default": false },
+                "action":  { "type": "string", "description": "Fallback action (e.g. ReturnDefault, Skip)." }
+              }
+            }
+          }
+        },
+        "validation": {
+          "type": "object",
+          "description": "Pre- and post-conditions evaluated before and after step execution.",
+          "properties": {
+            "preConditions":  { "$ref": "#/definitions/ConditionList" },
+            "postConditions": { "$ref": "#/definitions/ConditionList" }
+          }
+        },
+        "observability": {
+          "type": "object",
+          "description": "Logging and tracing configuration for this step.",
+          "properties": {
+            "logLevel": {
+              "type": "string",
+              "enum": ["Trace", "Debug", "Information", "Warning", "Error", "Critical"],
+              "default": "Information"
+            },
+            "metrics": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Metric names to emit on step completion."
+            },
+            "trace": {
+              "type": "boolean",
+              "description": "Emit a distributed trace span for this step.",
+              "default": true
+            }
+          }
+        },
+        "nextSteps": {
+          "type": "object",
+          "description": "Explicit step routing. Overrides sequential default when set.",
+          "properties": {
+            "onSuccess": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Step IDs to execute on success."
+            },
+            "onFailure": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Step IDs to execute on failure (e.g. an error-handler step)."
+            }
           }
         },
         "subSteps": {
@@ -87,10 +261,53 @@
           "items": { "$ref": "#/definitions/PlanStep" },
           "default": []
         },
+        "condition": {
+          "type": "string",
+          "description": "Expression evaluated before this step runs. Step is skipped (marked success) when false. Supported syntax: WorkflowState['key'] == value | != value | > N | < N | CONTAINS substring. Example: \"WorkflowState['status'] == 'active'\" or \"WorkflowState['itemName'] CONTAINS 'Apple iPhone'\""
+        },
+        "elseStepId": {
+          "type": "string",
+          "description": "Name of the step to route to when condition evaluates false. If omitted the step is simply skipped."
+        },
+        "isLoopStart": {
+          "type": "boolean",
+          "description": "Marks this step as the start of a repeating loop body. Pair with a later isLoopEnd step.",
+          "default": false
+        },
+        "isLoopEnd": {
+          "type": "boolean",
+          "description": "Marks this step as the end of a loop body. When loopCondition is still true, execution jumps back to the step after the matching isLoopStart and WorkflowState['iteration'] is incremented.",
+          "default": false
+        },
+        "loopCondition": {
+          "type": "string",
+          "description": "Condition re-evaluated after each loop iteration. Loop stops when false (max 1000 iterations). Syntax: 'iteration < N' | 'iteration <= N' | WorkflowState expression. Example: \"iteration < 5\""
+        },
+        "loopStartId": {
+          "type": "string",
+          "description": "Name of the matching isLoopStart step. Required on isLoopEnd steps."
+        },
         "metadata": {
           "type": "object",
           "description": "Arbitrary metadata for tooling, logging, or UI display.",
           "additionalProperties": true
+        }
+      }
+    },
+
+    "ConditionList": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type":         { "type": "string", "description": "Condition type (ContextCheck, WorkflowStateCheck, StepDependencyCheck, OutputCheck, FileExistsCheck)." },
+          "expression":   { "type": "string", "description": "Expression evaluated at runtime." },
+          "errorMessage": { "type": "string", "description": "Message surfaced when the condition fails." },
+          "dependsOn": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Step IDs that must have completed (StepDependencyCheck only)."
+          }
         }
       }
     }

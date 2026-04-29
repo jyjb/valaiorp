@@ -4,7 +4,7 @@
         <name>Valaiorp.Runtime</name>
     </assembly>
     <members>
-        <member name="M:Valaiorp.Runtime.Bootstrap.RuntimeBuilder.BuildBot(System.String,System.String,Valaiorp.Configuration.Config.AgenticAIConfig,Valaiorp.Core.Contracts.IWorkQueue,System.Func{Valaiorp.Core.Contracts.IWorkItem,Valaiorp.Core.Contracts.IExecutionContext},System.Action{Microsoft.Extensions.DependencyInjection.IServiceCollection},System.Action{Valaiorp.Tools.Registries.ModuleRegistry},System.Int32,System.Int32)">
+        <member name="M:Valaiorp.Runtime.Bootstrap.RuntimeBuilder.BuildBot(System.String,System.String,Valaiorp.Configuration.Config.ValaiorpConfig,Valaiorp.Core.Contracts.IWorkQueue,System.Func{Valaiorp.Core.Contracts.IWorkItem,Valaiorp.Core.Contracts.IExecutionContext},System.Action{Microsoft.Extensions.DependencyInjection.IServiceCollection},System.Action{Valaiorp.Tools.Registries.ModuleRegistry},System.Int32,System.Int32)">
              <summary>
              Builds a BotWorker — a self-contained, continuously running bot that pulls
              IWorkItems from a shared IWorkQueue and executes each one through AgentRuntime.
@@ -31,6 +31,16 @@
              <param name="maxConcurrency">Max items processed in parallel per BotWorker instance.</param>
              <param name="maxAttempts">Max retry attempts before dead-lettering a failed item.</param>
         </member>
+        <member name="T:Valaiorp.Runtime.Bot.BotWorkerHealth">
+            <summary>
+            Point-in-time health snapshot returned by <see cref="M:Valaiorp.Runtime.Bot.BotWorker.GetHealthAsync(System.Threading.CancellationToken)"/>.
+            </summary>
+        </member>
+        <member name="M:Valaiorp.Runtime.Bot.BotWorkerHealth.#ctor(System.Boolean,System.Int32,System.Int32,System.Int32,System.Nullable{System.DateTimeOffset})">
+            <summary>
+            Point-in-time health snapshot returned by <see cref="M:Valaiorp.Runtime.Bot.BotWorker.GetHealthAsync(System.Threading.CancellationToken)"/>.
+            </summary>
+        </member>
         <member name="T:Valaiorp.Runtime.Bot.BotWorker">
              <summary>
              Continuously running bot that pulls IWorkItems from a shared IWorkQueue and
@@ -41,7 +51,7 @@
             
              Lifecycle:
                StartAsync()  — registers a run, begins the poll loop (non-blocking)
-               StopAsync()   — drains in-flight work, ends the run, then stops
+               StopAsync()   — drains in-flight work up to drainTimeout, ends the run, then stops
                DisposeAsync() — stop + dispose the underlying AgentRuntime
             
              Retry / dead-letter (at queue level, outer layer above tool-level retry):
@@ -53,8 +63,19 @@
         <member name="M:Valaiorp.Runtime.Bot.BotWorker.StartAsync(System.Threading.CancellationToken)">
             <summary>Registers a queue run and starts the poll loop (non-blocking).</summary>
         </member>
-        <member name="M:Valaiorp.Runtime.Bot.BotWorker.StopAsync">
-            <summary>Signals stop, drains in-flight items, and ends the queue run.</summary>
+        <member name="M:Valaiorp.Runtime.Bot.BotWorker.StopAsync(System.TimeSpan)">
+            <summary>
+            Signals stop, waits up to <paramref name="drainTimeout"/> for in-flight items to
+            complete, then ends the queue run. Defaults to 30 seconds. Logs a warning if the
+            drain window is exceeded so that stuck tasks are visible in production.
+            </summary>
+        </member>
+        <member name="M:Valaiorp.Runtime.Bot.BotWorker.GetHealthAsync(System.Threading.CancellationToken)">
+            <summary>
+            Returns a point-in-time health snapshot, including queue depths and the last
+            heartbeat timestamp. The heartbeat advances once per poll iteration; a stale
+            timestamp indicates the loop has stalled.
+            </summary>
         </member>
         <member name="M:Valaiorp.Runtime.DependencyInjection.ServiceCollectionExtensions.AddSqlPersistence(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Func{System.Data.Common.DbConnection})">
              <summary>

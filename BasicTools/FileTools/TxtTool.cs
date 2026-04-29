@@ -43,11 +43,15 @@ namespace Valaiorp.BasicTools.FileTools
 
         public async Task<string> ReadAsync(string filePath, CancellationToken ct = default)
         {
-            if (!File.Exists(filePath)) throw new FileNotFoundException($"File not found: {filePath}");
+            filePath = PathGuard.Validate(filePath);
+            if (!File.Exists(filePath)) throw new FileNotFoundException("File not found.");
             return await File.ReadAllTextAsync(filePath, ct).ConfigureAwait(false);
         }
 
         public async Task WriteAsync(string filePath, string content, CancellationToken ct = default)
-            => await File.WriteAllTextAsync(filePath, content, ct).ConfigureAwait(false);
+        {
+            filePath = PathGuard.Validate(filePath);
+            await File.WriteAllTextAsync(filePath, content, ct).ConfigureAwait(false);
+        }
     }
 }

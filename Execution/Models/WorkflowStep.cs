@@ -22,9 +22,22 @@ namespace Valaiorp.Execution.Models
         public IReadOnlyCollection<IExecutionStep> SubSteps { get; set; } = Array.Empty<IExecutionStep>();
 
         public string? NextStepId { get; set; }
+
+        /// <summary>
+        /// Step to jump to when <see cref="Condition"/> evaluates false.
+        /// If null and Condition is false, the workflow terminates at this step.
+        /// </summary>
+        public string? ElseStepId { get; set; }
+
         public string? Condition { get; set; }
         public bool IsLoopStart { get; set; }
         public bool IsLoopEnd { get; set; }
         public string? LoopCondition { get; set; }
+
+        /// <summary>
+        /// ID of the matching loop-start step. Required on loop-end steps so the
+        /// executor can look up the correct iteration counter.
+        /// </summary>
+        public string? LoopStartId { get; set; }
     }
 }

@@ -32,6 +32,6 @@ namespace Valaiorp.Configuration.Models
         public bool AllowDynamicPlanning { get; set; } = false;
         public bool AllowToolSelection { get; set; } = false;
         public bool AllowConditionalBranching { get; set; } = true;
-        public bool RequireApprovalForHighRisk { get; set; } = true;
+        public bool RequireApprovalForHighRisk { get; set; } = false;
     }
 }

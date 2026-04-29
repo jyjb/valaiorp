@@ -1,6 +1,17 @@
 namespace Valaiorp.Runtime.Bot
 {
     using Valaiorp.Core.Contracts;
+    using Valaiorp.Observability.Contracts;
+
+    /// <summary>
+    /// Point-in-time health snapshot returned by <see cref="BotWorker.GetHealthAsync"/>.
+    /// </summary>
+    public sealed record BotWorkerHealth(
+        bool            IsRunning,
+        int             PendingCount,
+        int             InProgressCount,
+        int             DeadLetterCount,
+        DateTimeOffset? LastHeartbeatUtc);
 
     /// <summary>
     /// Continuously running bot that pulls IWorkItems from a shared IWorkQueue and
@@ -11,7 +22,7 @@ namespace Valaiorp.Runtime.Bot
     ///
     /// Lifecycle:
     ///   StartAsync()  — registers a run, begins the poll loop (non-blocking)
-    ///   StopAsync()   — drains in-flight work, ends the run, then stops
+    ///   StopAsync()   — drains in-flight work up to drainTimeout, ends the run, then stops
     ///   DisposeAsync() — stop + dispose the underlying AgentRuntime
     ///
     /// Retry / dead-letter (at queue level, outer layer above tool-level retry):
@@ -29,10 +40,13 @@ namespace Valaiorp.Runtime.Bot
         private readonly int                                 _maxConcurrency;
         private readonly int                                 _maxAttempts;
         private readonly TimeSpan                            _pollInterval;
+        private readonly ILogger?                            _logger;
 
         private CancellationTokenSource? _cts;
         private Task?                    _loopTask;
         private string?                  _runId;
+        private DateTimeOffset           _lastHeartbeatUtc;
+        private int                      _inFlightCount;
 
         public BotWorker(
             AgentRuntime                       runtime,
@@ -42,7 +56,8 @@ namespace Valaiorp.Runtime.Bot
             Func<IWorkItem, IExecutionContext> contextFactory,
             int      maxConcurrency = 4,
             int      maxAttempts    = 3,
-            TimeSpan pollInterval   = default)
+            TimeSpan pollInterval   = default,
+            ILogger? logger         = null)
         {
             _runtime        = runtime;
             _queue          = queue;
@@ -51,7 +66,8 @@ namespace Valaiorp.Runtime.Bot
             _contextFactory = contextFactory;
             _maxConcurrency = maxConcurrency;
             _maxAttempts    = maxAttempts;
-            _pollInterval   = pollInterval == default ? TimeSpan.FromMilliseconds(500) : pollInterval;
+            _pollInterval   = pollInterval <= TimeSpan.Zero ? TimeSpan.FromMilliseconds(500) : pollInterval;
+            _logger         = logger;
         }
 
         public IBotContext BotContext => _botContext;
@@ -67,14 +83,66 @@ namespace Valaiorp.Runtime.Bot
             _runId    = run.RunId;
             _cts      = CancellationTokenSource.CreateLinkedTokenSource(externalCt);
             _loopTask = RunLoopAsync(_cts.Token);
+
+            if (_logger != null)
+                await _logger.LogAsync(LogLevel.Information,
+                    $"[BotWorker] Started: bot={_botContext.BotId}, queue={_queueId}, run={_runId}",
+                    ct: externalCt).ConfigureAwait(false);
         }
 
-        /// <summary>Signals stop, drains in-flight items, and ends the queue run.</summary>
-        public async Task StopAsync()
+        /// <summary>
+        /// Signals stop, waits up to <paramref name="drainTimeout"/> for in-flight items to
+        /// complete, then ends the queue run. Defaults to 30 seconds. Logs a warning if the
+        /// drain window is exceeded so that stuck tasks are visible in production.
+        /// </summary>
+        public async Task StopAsync(TimeSpan drainTimeout = default)
         {
             if (_cts != null) await _cts.CancelAsync().ConfigureAwait(false);
-            if (_loopTask != null) await _loopTask.ConfigureAwait(false);
+
+            if (_loopTask != null)
+            {
+                var timeout = drainTimeout <= TimeSpan.Zero ? TimeSpan.FromSeconds(30) : drainTimeout;
+                using var drainCts = new CancellationTokenSource(timeout);
+                try
+                {
+                    await _loopTask.WaitAsync(drainCts.Token).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    if (_logger != null)
+                        await _logger.LogAsync(LogLevel.Warning,
+                            $"[BotWorker] Drain timeout ({timeout}) exceeded; " +
+                            $"{_inFlightCount} task(s) still in flight — bot={_botContext.BotId}",
+                            ct: CancellationToken.None).ConfigureAwait(false);
+                }
+            }
+
             if (_runId != null) await _queue.EndRunAsync(_runId).ConfigureAwait(false);
+
+            if (_logger != null)
+                await _logger.LogAsync(LogLevel.Information,
+                    $"[BotWorker] Stopped: bot={_botContext.BotId}, queue={_queueId}, run={_runId}",
+                    ct: CancellationToken.None).ConfigureAwait(false);
+        }
+
+        // ── Health ────────────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Returns a point-in-time health snapshot, including queue depths and the last
+        /// heartbeat timestamp. The heartbeat advances once per poll iteration; a stale
+        /// timestamp indicates the loop has stalled.
+        /// </summary>
+        public async Task<BotWorkerHealth> GetHealthAsync(CancellationToken ct = default)
+        {
+            var pending    = await _queue.GetPendingCountAsync(_queueId, ct).ConfigureAwait(false);
+            var inProgress = await _queue.GetInProgressCountAsync(_queueId, ct).ConfigureAwait(false);
+            var deadLetter = await _queue.GetDeadLetterCountAsync(_queueId, ct).ConfigureAwait(false);
+            return new BotWorkerHealth(
+                IsRunning,
+                pending,
+                inProgress,
+                deadLetter,
+                _lastHeartbeatUtc == default ? null : _lastHeartbeatUtc);
         }
 
         // ── Monitoring ────────────────────────────────────────────────────────────
@@ -102,6 +170,7 @@ namespace Valaiorp.Runtime.Bot
             {
                 while (!ct.IsCancellationRequested)
                 {
+                    _lastHeartbeatUtc = DateTimeOffset.UtcNow;
                     activeTasks.RemoveAll(t => t.IsCompleted);
 
                     var item = await _queue.GetNextItemAsync(
@@ -114,11 +183,16 @@ namespace Valaiorp.Runtime.Bot
                     }
 
                     await semaphore.WaitAsync(ct).ConfigureAwait(false);
+                    Interlocked.Increment(ref _inFlightCount);
 
                     activeTasks.Add(Task.Run(async () =>
                     {
                         try   { await ProcessItemAsync(item, ct).ConfigureAwait(false); }
-                        finally { semaphore.Release(); }
+                        finally
+                        {
+                            semaphore.Release();
+                            Interlocked.Decrement(ref _inFlightCount);
+                        }
                     }, ct));
                 }
             }

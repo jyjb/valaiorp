@@ -1,6 +1,7 @@
 namespace Valaiorp.BasicTools.FileTools
 {
     using System.Xml;
+    using System.IO;
     using Valaiorp.Core.Contracts;
     using Valaiorp.Core.Enums;
     using Valaiorp.Tools.Helpers;
@@ -45,16 +46,28 @@ namespace Valaiorp.BasicTools.FileTools
 
         public async Task<string> ReadAsync(string filePath, CancellationToken ct = default)
         {
-            if (!File.Exists(filePath)) throw new FileNotFoundException($"File not found: {filePath}");
+            filePath = PathGuard.Validate(filePath);
+            if (!File.Exists(filePath)) throw new FileNotFoundException("File not found.");
             var content = await File.ReadAllTextAsync(filePath, ct).ConfigureAwait(false);
-            try { new XmlDocument().LoadXml(content); }
+            try
+            {
+                var settings = new XmlReaderSettings { XmlResolver = null, DtdProcessing = DtdProcessing.Prohibit };
+                using var reader = XmlReader.Create(new StringReader(content), settings);
+                while (reader.Read()) { }
+            }
             catch (XmlException ex) { throw new InvalidDataException("File is not valid XML.", ex); }
             return content;
         }
 
         public async Task WriteAsync(string filePath, string content, CancellationToken ct = default)
         {
-            try { new XmlDocument().LoadXml(content); }
+            filePath = PathGuard.Validate(filePath);
+            try
+            {
+                var settings = new XmlReaderSettings { XmlResolver = null, DtdProcessing = DtdProcessing.Prohibit };
+                using var reader = XmlReader.Create(new StringReader(content), settings);
+                while (reader.Read()) { }
+            }
             catch (XmlException ex) { throw new InvalidDataException("Content is not valid XML.", ex); }
             await File.WriteAllTextAsync(filePath, content, ct).ConfigureAwait(false);
         }

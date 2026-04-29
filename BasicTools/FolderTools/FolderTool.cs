@@ -1,5 +1,7 @@
 namespace Valaiorp.BasicTools.FolderTools
 {
+    using Valaiorp.BasicTools.FileTools;
+    using Valaiorp.BasicTools;
     using Valaiorp.Core.Contracts;
     using Valaiorp.Core.Enums;
     using Valaiorp.Tools.Contracts;
@@ -29,15 +31,17 @@ namespace Valaiorp.BasicTools.FolderTools
                 if (!Enum.TryParse<FolderAction>(actionStr, true, out var action))
                     return ToolResult.BadRequest(new { Message = $"Unknown action '{actionStr}'. Use: create, delete, list, copy, move, exists." });
 
-                var path      = parameters.GetString("path");
-                var destPath  = parameters.GetString("destPath");
+                var rawPath   = parameters.GetString("path");
+                var path      = string.IsNullOrWhiteSpace(rawPath) ? rawPath : PathGuard.Validate(rawPath);
+                var rawDest   = parameters.GetString("destPath");
+                var destPath  = string.IsNullOrWhiteSpace(rawDest) ? rawDest : PathGuard.Validate(rawDest);
                 var recursive = parameters.GetBool("recursive");
                 var pattern   = parameters.GetString("pattern", "*");
 
                 return action switch
                 {
                     FolderAction.Create => Create(path),
-                    FolderAction.Delete => Delete(path, recursive),
+                    FolderAction.Delete => Delete(path, recursive, context.Id),
                     FolderAction.List   => List(path, pattern),
                     FolderAction.Copy   => await CopyAsync(path, destPath, ct).ConfigureAwait(false),
                     FolderAction.Move   => Move(path, destPath),
@@ -50,9 +54,11 @@ namespace Valaiorp.BasicTools.FolderTools
 
         private static ToolResult Create(string path) { Directory.CreateDirectory(path); return ToolResult.Created(new { Path = path }); }
 
-        private static ToolResult Delete(string path, bool recursive)
+        private static ToolResult Delete(string path, bool recursive, string contextId)
         {
             if (!Directory.Exists(path)) return ToolResult.NotFound(path);
+            ToolSecurityLog.Write("folder-tool", "Delete", contextId,
+                new { path, recursive, warning = "Directory deletion executed" });
             Directory.Delete(path, recursive);
             return ToolResult.Ok(new { Deleted = path });
         }
@@ -97,6 +103,6 @@ namespace Valaiorp.BasicTools.FolderTools
         }
 
         private static ToolResult Exists(string path) =>
-            ToolResult.Ok(new { Path = path, Exists = Directory.Exists(path) });
+            ToolResult.Ok(new { Path = path, Exists = File.Exists(path) || Directory.Exists(path) });
     }
 }

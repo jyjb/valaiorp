@@ -1,6 +1,5 @@
 namespace Valaiorp.Execution.Workflow
 {
-    using System.Collections.Concurrent;
     using Valaiorp.Core.Contracts;
     using Valaiorp.Core.Enums;
     using Valaiorp.Execution.Executors;
@@ -11,7 +10,6 @@ namespace Valaiorp.Execution.Workflow
     {
         private readonly ToolResolver _toolResolver;
         private readonly ParallelExecutor _parallelExecutor;
-        private readonly ConcurrentDictionary<string, int> _loopCounters = new();
 
         public WorkflowExecutor(ToolResolver toolResolver, ParallelExecutor parallelExecutor)
         {
@@ -25,29 +23,28 @@ namespace Valaiorp.Execution.Workflow
             CancellationToken ct = default)
         {
             if (steps.Count == 0)
-            {
                 return new ExecutionResult(context.Id, context.Id, false, "No steps provided in workflow.");
-            }
 
-            var currentStep = steps[0];
-            var visitedSteps = new HashSet<string>();
+            // Loop counters are keyed on the loop-START step ID and local to this execution.
+            // Using a local dictionary avoids any shared state across concurrent ExecuteAsync calls.
+            var loopCounters   = new Dictionary<string, int>();
+            var visitedSteps   = new HashSet<string>();
             var executionResults = new List<IExecutionResult>();
             const int maxIterations = 1000;
             var iterations = 0;
 
+            var currentStep = steps[0];
+
             while (currentStep != null && iterations < maxIterations)
             {
                 iterations++;
+
                 if (visitedSteps.Contains(currentStep.Id) && !currentStep.IsLoopStart)
-                {
                     return new ExecutionResult(context.Id, context.Id, false,
-                        $"Potential infinite loop detected at step {currentStep.Id}.");
-                }
+                        $"Potential infinite loop detected at step '{currentStep.Name}' ({currentStep.Id}).");
 
                 if (currentStep.IsLoopStart)
-                {
-                    _loopCounters.TryAdd(currentStep.Id, 0);
-                }
+                    loopCounters.TryAdd(currentStep.Id, 0);
 
                 if (currentStep.Tool != ToolType.None
                     && !string.IsNullOrEmpty(currentStep.ToolId)
@@ -62,40 +59,49 @@ namespace Valaiorp.Execution.Workflow
 
                     executionResults.Add(result);
                     if (!result.IsSuccess)
-                    {
                         return new ExecutionResult(context.Id, context.Id, false,
                             $"Step '{currentStep.Name}' failed: {result.ErrorMessage}", result.Exception);
-                    }
 
                     foreach (var output in result.Outputs)
-                    {
                         context.WorkflowState[output.Key] = output.Value;
-                    }
                 }
 
-                if (currentStep.IsLoopEnd && _loopCounters.TryGetValue(currentStep.Id, out var count))
+                if (currentStep.IsLoopEnd)
                 {
-                    _loopCounters[currentStep.Id] = count + 1;
-                    if (!EvaluateLoopCondition(currentStep.LoopCondition!, context, count + 1))
+                    // loopStartId stored on the loop-end step so the counter can be found.
+                    var loopStartId = currentStep.LoopStartId;
+                    if (loopStartId != null && loopCounters.TryGetValue(loopStartId, out var count))
                     {
-                        _loopCounters.TryRemove(currentStep.Id, out _);
-                        visitedSteps.Remove(currentStep.Id);
+                        count++;
+                        loopCounters[loopStartId] = count;
+
+                        if (!string.IsNullOrEmpty(currentStep.LoopCondition) &&
+                            EvaluateLoopCondition(currentStep.LoopCondition, context, count))
+                        {
+                            // Loop condition still true — jump back to the step after loop start.
+                            var loopStart = steps.FirstOrDefault(s => s.Id == loopStartId);
+                            if (loopStart != null)
+                            {
+                                currentStep = GetNextStep(steps, loopStart, context, loopCounters)!;
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            loopCounters.Remove(loopStartId);
+                        }
                     }
                 }
 
                 if (!currentStep.IsLoopStart && !currentStep.IsLoopEnd)
-                {
                     visitedSteps.Add(currentStep.Id);
-                }
 
-                currentStep = GetNextStep(steps, currentStep, context)!;
+                currentStep = GetNextStep(steps, currentStep, context, loopCounters)!;
             }
 
             if (iterations >= maxIterations)
-            {
                 return new ExecutionResult(context.Id, context.Id, false,
                     "Maximum iterations reached. Possible infinite loop.");
-            }
 
             return new ExecutionResult(context.Id, context.Id, true, null, null,
                 new Dictionary<string, object>
@@ -108,43 +114,44 @@ namespace Valaiorp.Execution.Workflow
         private WorkflowStep? GetNextStep(
             IReadOnlyList<WorkflowStep> steps,
             WorkflowStep currentStep,
-            WorkflowExecutionContext context)
+            WorkflowExecutionContext context,
+            Dictionary<string, int> loopCounters)
         {
             if (string.IsNullOrEmpty(currentStep.NextStepId))
-            {
                 return null;
-            }
 
             if (!string.IsNullOrEmpty(currentStep.Condition))
             {
                 if (EvaluateCondition(currentStep.Condition, context))
-                {
                     return steps.FirstOrDefault(s => s.Id == currentStep.NextStepId);
-                }
 
-                var elseStepId = currentStep.NextStepId.StartsWith('!')
-                    ? currentStep.NextStepId[1..]
-                    : null;
-                return steps.FirstOrDefault(s => s.Id == elseStepId);
+                // Explicit else branch takes priority over the !-prefix convention.
+                var elseId = !string.IsNullOrEmpty(currentStep.ElseStepId)
+                    ? currentStep.ElseStepId
+                    : currentStep.NextStepId.StartsWith('!')
+                        ? currentStep.NextStepId[1..]
+                        : null;
+
+                if (elseId == null)
+                    return null; // condition false and no else target — terminate workflow
+
+                return steps.FirstOrDefault(s => s.Id == elseId);
             }
 
             return steps.FirstOrDefault(s => s.Id == currentStep.NextStepId);
         }
 
-        // Evaluates simple conditions of the form: WorkflowState['Key'] > 5
+        // Evaluates simple conditions of the form: WorkflowState['Key'] == value
         private bool EvaluateCondition(string condition, WorkflowExecutionContext context)
         {
             try
             {
                 if (!condition.StartsWith("WorkflowState['"))
-                {
                     return false;
-                }
 
                 var keyEnd = condition.IndexOf("']", StringComparison.Ordinal);
                 if (keyEnd < 0) return false;
 
-                // "WorkflowState['" is 15 chars, key starts at index 15
                 var key = condition[15..keyEnd];
                 if (!context.WorkflowState.TryGetValue(key, out var value)) return false;
 
@@ -160,10 +167,7 @@ namespace Valaiorp.Execution.Workflow
 
                 return false;
             }
-            catch
-            {
-                return false;
-            }
+            catch { return false; }
         }
 
         private bool EvaluateLoopCondition(string condition, WorkflowExecutionContext context, int iteration)
@@ -175,8 +179,8 @@ namespace Valaiorp.Execution.Workflow
                     var op = condition.Contains("==") ? "==" :
                              condition.Contains("<=") ? "<=" :
                              condition.Contains(">=") ? ">=" :
-                             condition.Contains('<') ? "<" :
-                             condition.Contains('>') ? ">" : null;
+                             condition.Contains('<')  ? "<"  :
+                             condition.Contains('>')  ? ">"  : null;
 
                     if (op != null)
                     {
@@ -202,10 +206,7 @@ namespace Valaiorp.Execution.Workflow
 
                 return true;
             }
-            catch
-            {
-                return false;
-            }
+            catch { return false; }
         }
     }
 }

@@ -18,6 +18,16 @@ namespace Valaiorp.Tools.Helpers
         public static T? Get<T>(this IReadOnlyDictionary<string, object> p, string key)
             => p.TryGetValue(key, out var v) && v is T typed ? typed : default;
 
+        /// <summary>
+        /// Splits a pipe-delimited "input" parameter into parts (max 3 so the last segment may itself contain pipes).
+        /// Protocol: action|param1|param2  e.g. "SetText|#username|admin"
+        /// </summary>
+        public static string[] ParsePipeInput(this IReadOnlyDictionary<string, object> p)
+        {
+            var raw = p.GetString("input");
+            return string.IsNullOrWhiteSpace(raw) ? [] : raw.Split('|', 3);
+        }
+
         public static IReadOnlyDictionary<string, object> Empty { get; } =
             new Dictionary<string, object>();
     }

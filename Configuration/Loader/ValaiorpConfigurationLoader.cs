@@ -37,7 +37,7 @@ namespace Valaiorp.Configuration.Loader
         /// base directory. If not found, writes a template to the current directory and
         /// returns framework defaults so the application can still start.
         /// </summary>
-        public static AgenticAIConfig LoadOrCreate(string? filePath = null)
+        public static ValaiorpConfig LoadOrCreate(string? filePath = null)
         {
             var resolved = filePath ?? FindConfigFile();
 
@@ -46,24 +46,24 @@ namespace Valaiorp.Configuration.Loader
                 resolved = Path.Combine(Directory.GetCurrentDirectory(), DefaultFileName);
                 WriteTemplate(resolved);
                 // Return defaults — the generated file documents every option.
-                return new AgenticAIConfig();
+                return new ValaiorpConfig();
             }
 
             return Load(resolved);
         }
 
         /// <summary>Loads and deserialises an existing config file (JSONC comments supported).</summary>
-        public static AgenticAIConfig Load(string filePath)
+        public static ValaiorpConfig Load(string filePath)
         {
             var json = File.ReadAllText(filePath, Encoding.UTF8);
-            var config = JsonSerializer.Deserialize<AgenticAIConfig>(json, ReadOptions)
-                         ?? new AgenticAIConfig();
+            var config = JsonSerializer.Deserialize<ValaiorpConfig>(json, ReadOptions)
+                         ?? new ValaiorpConfig();
             Normalize(config);
             return config;
         }
 
         // Post-load normalization for sentinel values that can't be expressed in JSON.
-        private static void Normalize(AgenticAIConfig config)
+        private static void Normalize(ValaiorpConfig config)
         {
             if (config.Parallelism.MaxDegreeOfParallelism <= 0)
                 config.Parallelism.MaxDegreeOfParallelism = Environment.ProcessorCount;

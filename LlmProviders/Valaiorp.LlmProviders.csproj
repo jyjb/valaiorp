@@ -18,6 +18,7 @@
     <EmbeddedResource Include="Profiles\gemini.json" />
     <EmbeddedResource Include="Profiles\mistral.json" />
     <EmbeddedResource Include="Profiles\cohere.json" />
+    <EmbeddedResource Include="Profiles\nvidia.json" />
   </ItemGroup>
 
   <!-- System.Net.Http and System.Text.Json are BCL — no NuGet packages needed -->

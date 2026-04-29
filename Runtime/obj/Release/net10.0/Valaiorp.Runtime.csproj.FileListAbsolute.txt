@@ -59,3 +59,6 @@ D:\._repos\valaiorp\Runtime\obj\Release\net10.0\refint\Valaiorp.Runtime.dll
 D:\._repos\valaiorp\Runtime\obj\Release\net10.0\Valaiorp.Runtime.xml
 D:\._repos\valaiorp\Runtime\obj\Release\net10.0\Valaiorp.Runtime.pdb
 D:\._repos\valaiorp\Runtime\obj\Release\net10.0\ref\Valaiorp.Runtime.dll
+d:\._repos\valaiorp\Runtime\bin\Release\net10.0\Valaiorp.Escalation.dll
+d:\._repos\valaiorp\Runtime\bin\Release\net10.0\Valaiorp.Escalation.pdb
+d:\._repos\valaiorp\Runtime\bin\Release\net10.0\Valaiorp.Escalation.xml

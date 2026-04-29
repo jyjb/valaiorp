@@ -1,6 +1,5 @@
 namespace Valaiorp.Guardrails.Pipeline
 {
-    using System.Collections.Concurrent;
     using Valaiorp.Core.Contracts;
     using Valaiorp.Guardrails.Contracts;
     using Valaiorp.Guardrails.Enums;
@@ -13,13 +12,30 @@ namespace Valaiorp.Guardrails.Pipeline
     ///   Block or Escalate — first violation wins; pipeline stops immediately.
     ///   Redact            — redacted content is forwarded to the next guardrail.
     ///   Warn              — logged in the result metadata; pipeline continues.
+    ///
+    /// Thread-safety: Add/Remove are lock-guarded to preserve insertion order.
+    /// Evaluation takes a snapshot of the list so long-running async checks never
+    /// block registrations on other threads.
     /// </summary>
     public sealed class GuardrailPipeline : IGuardrailPipeline
     {
-        private readonly ConcurrentDictionary<string, IGuardrail> _guardrails = new();
+        private readonly List<IGuardrail> _guardrails = new();
+        private readonly Lock _lock = new();
 
-        public void Add(IGuardrail guardrail)    => _guardrails.TryAdd(guardrail.Id, guardrail);
-        public void Remove(string guardrailId)   => _guardrails.TryRemove(guardrailId, out _);
+        public void Add(IGuardrail guardrail)
+        {
+            lock (_lock)
+            {
+                if (_guardrails.All(g => g.Id != guardrail.Id))
+                    _guardrails.Add(guardrail);
+            }
+        }
+
+        public void Remove(string guardrailId)
+        {
+            lock (_lock)
+                _guardrails.RemoveAll(g => g.Id == guardrailId);
+        }
 
         public Task<GuardrailResult> EvaluateInputAsync(
             IExecutionContext context, string content, CancellationToken ct = default)
@@ -46,10 +62,15 @@ namespace Valaiorp.Guardrails.Pipeline
             IReadOnlyDictionary<string, object>? toolInputs,
             CancellationToken ct)
         {
+            // Snapshot once so Add/Remove during evaluation don't affect this run.
+            IGuardrail[] snapshot;
+            lock (_lock)
+                snapshot = [.. _guardrails];
+
             var current = content;
             var warnings = new List<string>();
 
-            foreach (var guardrail in _guardrails.Values)
+            foreach (var guardrail in snapshot)
             {
                 if (!guardrail.IsEnabled) continue;
                 if (guardrail.Scope != GuardrailScope.All && guardrail.Scope != scope) continue;
@@ -81,15 +102,13 @@ namespace Valaiorp.Guardrails.Pipeline
                 }
             }
 
-            var finalResult = GuardrailResult.Allow(current);
-
             if (warnings.Count > 0)
                 return GuardrailResult.Warn(
                     guardrailId: "pipeline",
                     reason: string.Join("; ", warnings),
                     metadata: new Dictionary<string, object> { ["SafeContent"] = current ?? string.Empty });
 
-            return finalResult;
+            return GuardrailResult.Allow(current);
         }
     }
 }

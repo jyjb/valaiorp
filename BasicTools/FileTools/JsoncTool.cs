@@ -46,17 +46,18 @@ namespace Valaiorp.BasicTools.FileTools
 
         public async Task<string> ReadAsync(string filePath, CancellationToken ct = default)
         {
-            if (!File.Exists(filePath)) throw new FileNotFoundException($"File not found: {filePath}");
+            filePath = PathGuard.Validate(filePath);
+            if (!File.Exists(filePath)) throw new FileNotFoundException("File not found.");
             var raw = await File.ReadAllTextAsync(filePath, ct).ConfigureAwait(false);
             var stripped = StripComments(raw);
-            // Validate the result is parseable JSON
             try { JsonDocument.Parse(stripped); }
             catch (JsonException ex) { throw new InvalidDataException("File is not valid JSONC.", ex); }
-            return raw; // return original with comments intact
+            return raw;
         }
 
         public async Task WriteAsync(string filePath, string content, CancellationToken ct = default)
         {
+            filePath = PathGuard.Validate(filePath);
             var stripped = StripComments(content);
             try { JsonDocument.Parse(stripped); }
             catch (JsonException ex) { throw new InvalidDataException("Content is not valid JSONC.", ex); }

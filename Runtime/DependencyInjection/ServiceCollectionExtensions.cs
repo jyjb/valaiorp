@@ -34,7 +34,7 @@ namespace Valaiorp.Runtime.DependencyInjection
     {
         public static IServiceCollection AddAgenticAIRuntime(
             this IServiceCollection services,
-            AgenticAIConfig config)
+            ValaiorpConfig config)
         {
             // Core tool registries
             services.AddSingleton<ToolRegistry>();
@@ -45,10 +45,13 @@ namespace Valaiorp.Runtime.DependencyInjection
                 module => new ModuleTool(module)));
             services.AddSingleton<ModuleExecutor>();
 
-            // Memory
-            services.AddSingleton<IShortTermMemory, InMemoryShortTermMemory>();
-            services.AddSingleton<ILongTermMemory, InMemoryLongTermMemory>();
-            services.AddSingleton<IConversationMemory, InMemoryConversationMemory>();
+            // Memory — file-backed by default so state survives process restarts.
+            // Swap for Redis/SQL implementations via services.AddSingleton<IShortTermMemory, ...>()
+            // after calling AddAgenticAIRuntime().
+            var memDir = config.Persistence.MemoryDirectory;
+            services.AddSingleton<IShortTermMemory>(_ => new JsonlShortTermMemory(memDir));
+            services.AddSingleton<ILongTermMemory>(_ => new JsonlLongTermMemory(memDir));
+            services.AddSingleton<IConversationMemory>(_ => new JsonlConversationMemory(memDir));
             services.AddSingleton<MemoryManager>(sp => new MemoryManager(
                 sp.GetRequiredService<IShortTermMemory>(),
                 sp.GetRequiredService<ILongTermMemory>(),
@@ -101,11 +104,26 @@ namespace Valaiorp.Runtime.DependencyInjection
 
             // Execution
             services.AddSingleton<ParallelExecutor>(sp =>
-                new ParallelExecutor(
+            {
+                // Fail fast at startup when approval is required but no approver is wired up.
+                var escalation = sp.GetService<Valaiorp.Escalation.Contracts.IEscalationService>();
+                if (config.Autonomy.RequireApprovalForHighRisk && escalation == null)
+                    throw new InvalidOperationException(
+                        "Autonomy.RequireApprovalForHighRisk is true but no IEscalationService is " +
+                        "registered. Call services.AddEscalationInterfaces() and provide concrete " +
+                        "implementations of IApprovalProvider, IOverrideProvider, and " +
+                        "IEscalationHandler — or set RequireApprovalForHighRisk to false.");
+
+                return new ParallelExecutor(
                     sp.GetRequiredService<ToolResolver>(),
                     sp.GetRequiredService<Valaiorp.Retry.Contracts.IRetryStrategy>(),
-                    config.Parallelism.MaxDegreeOfParallelism));
-            services.AddSingleton<TransactionManager>();
+                    config.Parallelism.MaxDegreeOfParallelism,
+                    config.Autonomy,
+                    escalation,
+                    sp.GetService<Valaiorp.Core.Contracts.IAgentRegistry>());
+            });
+            services.AddSingleton<TransactionManager>(sp =>
+                new TransactionManager(sp.GetRequiredService<ToolResolver>()));
 
             // Guardrails
             services.AddSingleton<IGuardrailPipeline>(_ =>
@@ -178,18 +196,25 @@ namespace Valaiorp.Runtime.DependencyInjection
             this IServiceCollection services,
             Func<System.Data.Common.DbConnection> connectionFactory)
         {
-            // Wrap the existing local logger with a composite that also writes to SQL
-            var existing = services.LastOrDefault(d => d.ServiceType == typeof(IExecutionLogger));
+            // Capture the instance registered by AddAgenticAIRuntime — do NOT call its factory
+            // again because that would create a second ExternalExecutionLogger writing to the
+            // same JSONL files, causing interleaved/corrupt log records.
+            var existingDescriptor = services.LastOrDefault(d => d.ServiceType == typeof(IExecutionLogger));
+            IExecutionLogger? capturedInstance = existingDescriptor?.ImplementationInstance as IExecutionLogger;
 
             services.AddSingleton<Valaiorp.Runtime.Logging.SqlExecutionLogger>(
                 _ => new Valaiorp.Runtime.Logging.InlineSqlExecutionLogger(connectionFactory));
 
+            // Remove the previous IExecutionLogger registration so the composite is the only one.
+            if (existingDescriptor != null)
+                services.Remove(existingDescriptor);
+
             services.AddSingleton<IExecutionLogger>(sp =>
             {
-                var local = existing?.ImplementationFactory != null
-                    ? (IExecutionLogger)existing.ImplementationFactory(sp)
-                    : existing?.ImplementationInstance as IExecutionLogger
-                      ?? sp.GetRequiredService<Valaiorp.Runtime.Logging.SqlExecutionLogger>();
+                // Use the already-constructed local logger if available; otherwise build it once.
+                var local = capturedInstance
+                    ?? (IExecutionLogger)new ExternalExecutionLogger(
+                        sp.GetRequiredService<ValaiorpConfig>().Persistence.LogDirectory);
 
                 var sql = sp.GetRequiredService<Valaiorp.Runtime.Logging.SqlExecutionLogger>();
                 return new Valaiorp.Tools.Enhanced.Logging.CompositeExecutionLogger([local, sql]);

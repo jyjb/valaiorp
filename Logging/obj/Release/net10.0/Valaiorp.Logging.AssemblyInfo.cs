@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Valaiorp.Logging")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+16570d38ca646345c65d06a5a8f778d5534d0d53")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f7ba7651d562201e0165d75bbc097e6ff0c15cb8")]
 [assembly: System.Reflection.AssemblyProductAttribute("Valaiorp.Logging")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Valaiorp.Logging")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

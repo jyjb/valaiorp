@@ -13,5 +13,23 @@
         <member name="M:Valaiorp.Memory.Contracts.IConversationMemory.GetRecentHistoryAsync(System.String,System.Int32,System.Threading.CancellationToken)">
             <summary>Returns the last <paramref name="maxTurns"/> turns for context window management.</summary>
         </member>
+        <member name="T:Valaiorp.Memory.Implementations.JsonlConversationMemory">
+            <summary>
+            File-backed conversation memory. Each conversation is appended to its own JSONL file
+            so history survives process restarts.
+            </summary>
+        </member>
+        <member name="T:Valaiorp.Memory.Implementations.JsonlLongTermMemory">
+            <summary>
+            File-backed long-term memory. Each context, log stream, and feedback stream is written to
+            its own file under the configured directory so data survives process restarts.
+            </summary>
+        </member>
+        <member name="T:Valaiorp.Memory.Implementations.JsonlShortTermMemory">
+            <summary>
+            File-backed short-term memory. All key-value pairs are persisted to a single JSON file
+            so data survives process restarts. A SemaphoreSlim serialises concurrent access.
+            </summary>
+        </member>
     </members>
 </doc>

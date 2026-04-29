@@ -4,13 +4,11 @@
         <name>Valaiorp.MultiAgent</name>
     </assembly>
     <members>
-        <member name="M:Valaiorp.MultiAgent.Contracts.IAgentRegistry.GetByCapability(System.String)">
-            <summary>Returns agents whose Capabilities list contains the given tool ID.</summary>
-        </member>
         <member name="M:Valaiorp.MultiAgent.DependencyInjection.MultiAgentServiceCollectionExtensions.AddMultiAgentRuntime(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Int32)">
             <summary>
-            Registers multi-agent services: IAgentRegistry, IConversationMemory, MultiAgentOrchestrator.
-            Call this after AddAgenticAIRuntime().
+            Registers multi-agent services: IAgentRegistry and MultiAgentOrchestrator.
+            Call this after AddAgenticAIRuntime() — IConversationMemory is already registered
+            there and is reused here rather than duplicated.
             </summary>
         </member>
         <member name="T:Valaiorp.MultiAgent.Orchestration.MultiAgentOrchestrator">
