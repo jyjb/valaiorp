@@ -9,6 +9,10 @@ namespace Valaiorp.Planner.Orchestration
     {
         private readonly ConcurrentDictionary<string, IPlanner> _planners = new();
         private string _defaultPlannerId = string.Empty;
+        private readonly IPlanEvaluator? _evaluator;
+
+        public PlannerOrchestrator() { }
+        public PlannerOrchestrator(IPlanEvaluator evaluator) { _evaluator = evaluator; }
 
         public void RegisterPlanner(IPlanner planner, bool setAsDefault = false)
         {
@@ -45,7 +49,10 @@ namespace Valaiorp.Planner.Orchestration
 
             try
             {
-                return await planner.CreatePlanAsync(context, ct).ConfigureAwait(false);
+                var plan = await planner.CreatePlanAsync(context, ct).ConfigureAwait(false);
+                if (_evaluator != null)
+                    plan.Evaluation = _evaluator.Evaluate(plan);
+                return plan;
             }
             catch
             {
@@ -53,7 +60,10 @@ namespace Valaiorp.Planner.Orchestration
                 var defaultPlanner = GetDefaultPlanner();
                 if (defaultPlanner != null && defaultPlanner.Id != planner.Id)
                 {
-                    return await defaultPlanner.CreatePlanAsync(context, ct).ConfigureAwait(false);
+                    var fallbackPlan = await defaultPlanner.CreatePlanAsync(context, ct).ConfigureAwait(false);
+                    if (_evaluator != null)
+                        fallbackPlan.Evaluation = _evaluator.Evaluate(fallbackPlan);
+                    return fallbackPlan;
                 }
                 throw;
             }

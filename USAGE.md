@@ -16,9 +16,9 @@ Consuming the Valaiorp framework as compiled assemblies in a .NET 10 project.
 | `Valaiorp.BasicTools.dll` | 10 built-in file/folder/API/UI tools |
 | `Valaiorp.Modules.dll` | `BaseModule`, `ModuleTool`, `ModuleExecutor` |
 | `Valaiorp.Policy.dll` | `PolicyRule`, `IPolicyEngine` |
-| `Valaiorp.Planner.dll` | `IPlanner`, `Plan`, `PlannerOrchestrator` |
+| `Valaiorp.Planner.dll` | `IPlanner`, `Plan`, `PlannerOrchestrator`, `PlanEvaluator` |
 | `Valaiorp.Knowledge.dll` | `IKnowledgeProvider`, resolver |
-| `Valaiorp.Execution.dll` | Execution engine, variable binding, transactions |
+| `Valaiorp.Execution.dll` | Execution engine, variable binding, transactions, `ReplayEngine`, `BudgetTracker` |
 | `Valaiorp.Observability.dll` | Console logging, tracing, metrics |
 | `Valaiorp.Retry.dll` | Retry policies — auto-registered by Runtime |
 | `Valaiorp.Logging.dll` | Plan/step/run logging — auto-registered by Runtime |
@@ -478,6 +478,138 @@ Syntax: `${<StepName>.Results.<dot.path>}` — unresolved references emit a warn
 
 ---
 
+## Agent Budgeting System
+
+`AgentBudget` caps resource consumption per workflow execution. `BudgetTracker` enforces limits thread-safely and throws `BudgetExceededException` when any limit is breached.
+
+### Configure a budget
+
+```csharp
+using Valaiorp.Execution.Budget;
+using Valaiorp.Execution.Models;
+
+var context = new WorkflowExecutionContext(baseContext)
+{
+    Budget = new AgentBudget
+    {
+        MaxToolCalls     = 20,                        // max tool invocations per run
+        MaxTokens        = 50_000,                    // total LLM tokens (fed externally)
+        MaxExecutionTime = TimeSpan.FromMinutes(5)    // wall-clock cap
+    }
+};
+```
+
+### Tool-call and time limits (automatic)
+
+`WorkflowExecutor` calls `budget.RecordToolCall()` and `budget.CheckTime()` before every tool invocation — no extra code needed:
+
+```csharp
+// Just set Budget on the context — WorkflowExecutor enforces it automatically
+var result = await executor.ExecuteAsync(steps, context, ct: cts.Token);
+```
+
+### Token limits (feed from your LLM response handler)
+
+`WorkflowExecutor` does not call LLMs directly. Record token usage from your runtime/provider layer:
+
+```csharp
+// Inside your AgentRuntime / LLM response handler:
+budgetTracker.RecordTokens(llmResponse.Usage.TotalTokens);
+```
+
+### Handle budget exceeded
+
+```csharp
+try
+{
+    await executor.ExecuteAsync(steps, context);
+}
+catch (BudgetExceededException ex)
+{
+    // ex.Kind  : BudgetKind.ToolCalls | BudgetKind.Tokens | BudgetKind.ExecutionTime
+    // ex.Used  : how much was consumed
+    // ex.Limit : the configured cap
+    Console.WriteLine($"Budget breached — {ex.Kind}: used {ex.Used}, limit {ex.Limit}");
+}
+```
+
+### Inspect usage after the run
+
+```csharp
+var tracker = new BudgetTracker(context.Budget!);
+// After executor.ExecuteAsync completes:
+Console.WriteLine($"Tool calls : {tracker.ToolCallsUsed}");
+Console.WriteLine($"Tokens     : {tracker.TokensUsed}");
+Console.WriteLine($"Elapsed    : {tracker.Elapsed.TotalSeconds:F1}s");
+```
+
+---
+
+## Execution Replay Engine
+
+`ReplayEngine` captures a per-step snapshot of `WorkflowState` and execution results during a run. Static helpers restore state and replay from any step for debugging or deterministic re-runs.
+
+### Capture during execution
+
+```csharp
+using Valaiorp.Execution.Replay;
+
+var replayEngine = new ReplayEngine();
+
+// Pass replayEngine to the executor — it captures each step automatically
+var result = await executor.ExecuteAsync(steps, context, replayEngine: replayEngine);
+
+// Persist after the run (serialise as needed)
+var snapshot = replayEngine.BuildSnapshot();
+```
+
+### Time-travel: inspect state at any step
+
+```csharp
+// Load a snapshot from a previous run
+var snapshot = LoadSnapshot("run-20260501.json");
+
+// Get what WorkflowState looked like at a specific step
+var stepSnap = snapshot.GetByIndex(2);         // 0-based index
+// or by name
+var stepSnap = snapshot.GetByName("PostInvoice");
+
+Console.WriteLine($"Step     : {stepSnap!.StepName}");
+Console.WriteLine($"Success  : {stepSnap.IsSuccess}");
+Console.WriteLine($"Duration : {stepSnap.Duration.TotalMilliseconds}ms");
+foreach (var (k, v) in stepSnap.WorkflowStateSnapshot)
+    Console.WriteLine($"  {k} = {v}");
+```
+
+### Partial re-run from a specific step
+
+```csharp
+// Restore WorkflowState to what it was just before step index 3
+ReplayEngine.RestoreState(snapshot, fromStepIndex: 3, context);
+
+// Get the tail of the steps list starting at index 3
+var replaySteps = ReplayEngine.GetReplaySteps(allSteps, fromIndex: 3);
+
+// Re-execute from that point forward
+var result = await executor.ExecuteAsync(replaySteps, context);
+```
+
+### StepSnapshot properties
+
+| Property | Description |
+|----------|-------------|
+| `StepId` | Step GUID |
+| `StepName` | Step name |
+| `StepIndex` | 0-based position in the run |
+| `Input` | Tool input string |
+| `Output` / `Error` | Result text or error message |
+| `IsSuccess` | Whether the step succeeded |
+| `Duration` | Execution time |
+| `CapturedAt` | UTC timestamp |
+| `WorkflowStateSnapshot` | Full copy of `WorkflowState` at capture time |
+
+---
+
 ## Built-in Tools (BasicTools)
 
 `RuntimeBuilder.Build()` automatically calls `BasicToolsRegistry.RegisterAll()` — all built-in tools are available without any manual registration step. If you build the DI container directly without `RuntimeBuilder`, call it yourself:
@@ -856,6 +988,75 @@ public sealed class SapInvoicePlanner : IPlanner
 runtime.GetService<PlannerOrchestrator>()
        .RegisterPlanner(new SapInvoicePlanner(), setAsDefault: true);
 ```
+
+---
+
+## Planner Evaluation Layer
+
+`PlanEvaluator` scores a plan (0–1 confidence) and validates its structure before execution. The orchestrator can evaluate every plan automatically.
+
+### Automatic evaluation via PlannerOrchestrator
+
+```csharp
+using Valaiorp.Planner.Evaluation;
+using Valaiorp.Planner.Orchestration;
+
+// Pass an evaluator at construction — every created plan is scored automatically
+var evaluator    = new PlanEvaluator();              // or new PlanEvaluator(toolRegistry)
+var orchestrator = new PlannerOrchestrator(evaluator);
+orchestrator.RegisterPlanner(new SapInvoicePlanner(), setAsDefault: true);
+
+var plan = await orchestrator.CreatePlanAsync(context: myContext);
+
+// plan.Evaluation is populated automatically after CreatePlanAsync returns
+var eval = plan.Evaluation!;
+Console.WriteLine($"Confidence : {eval.ConfidenceScore:P0}");
+Console.WriteLine($"Valid      : {eval.IsValid}");
+Console.WriteLine($"Action     : {eval.Recommendation}");   // Proceed | Review | Reject
+
+foreach (var issue   in eval.Issues)   Console.WriteLine($"  Issue:   {issue}");
+foreach (var warning in eval.Warnings) Console.WriteLine($"  Warning: {warning}");
+```
+
+### Standalone evaluation
+
+```csharp
+using Valaiorp.Planner.Evaluation;
+using Valaiorp.Tools.Registries;
+
+// Optional: pass a ToolRegistry so the evaluator can verify referenced tools actually exist
+var toolRegistry = runtime.GetService<ToolRegistry>();
+var evaluator    = new PlanEvaluator(toolRegistry);
+
+var result = evaluator.Evaluate(myPlan);
+
+switch (result.Recommendation)
+{
+    case EvaluationRecommendation.Reject:
+        throw new InvalidOperationException($"Plan rejected: {string.Join(", ", result.Issues)}");
+    case EvaluationRecommendation.Review:
+        await escalationService.RequestApprovalAsync(context, "plan-review",
+            $"Confidence {result.ConfidenceScore:P0} — {string.Join("; ", result.Warnings)}");
+        break;
+    // Proceed: continue execution normally
+}
+```
+
+### Confidence deductions
+
+| Condition | Deduction |
+|-----------|-----------|
+| Step missing a name | −0.05 per step |
+| Step has no `ToolId`, `AgentId`, or `ModuleId` | −0.05 per step (warning) |
+| Step references an unregistered tool (requires `ToolRegistry`) | −0.15 per step (issue) |
+| Loop-end step references an unknown `LoopStartId` | −0.10 per step (issue) |
+| `Plan.Governance.RiskScore` > 0 | −`RiskScore × 0.1` |
+
+| Score | Recommendation |
+|-------|---------------|
+| ≥ 0.70 | `Proceed` |
+| ≥ 0.40 | `Review` |
+| < 0.40 | `Reject` |
 
 ---
 

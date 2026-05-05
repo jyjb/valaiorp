@@ -3,7 +3,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <IsPackable>true</IsPackable>
     <PackageId>Valaiorp</PackageId>
-    <Version>1.5.2</Version>
+    <Version>1.5.5</Version>
     <Authors>Jeyaraj</Authors>
     <Description>Valaiorp — production-grade Workflow and Agentic AI Execution Framework for .NET 10. Supports IRPA, AI Workflow, AI Agent, and fully Agentic modes with multi-bot/multi-machine work queues, built-in guardrails, policy enforcement, retry, escalation, and pluggable LLM providers.</Description>
     <PackageTags>ai;agent;agentic;llm;workflow;irpa;rpa;bot;queue;framework;net10;dotnet</PackageTags>

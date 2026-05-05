@@ -6,7 +6,7 @@
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v10.0": {
-      "Valaiorp/1.5.2": {
+      "Valaiorp/1.5.5": {
         "dependencies": {
           "Valaiorp.BasicTools": "1.0.0",
           "Valaiorp.Configuration": "1.0.0",
@@ -290,7 +290,7 @@
     }
   },
   "libraries": {
-    "Valaiorp/1.5.2": {
+    "Valaiorp/1.5.5": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

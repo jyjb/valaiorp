@@ -11,6 +11,8 @@ namespace Valaiorp.Runtime
     using Valaiorp.Memory.Contracts;
     using Valaiorp.Observability.Contracts;
     using Valaiorp.Observability.Tracing;
+    using System.Text.Json;
+    using Valaiorp.Planner.Models;
     using Valaiorp.Planner.Orchestration;
     using Valaiorp.Policy.Contracts;
     using Valaiorp.Guardrails.Contracts;
@@ -95,6 +97,8 @@ namespace Valaiorp.Runtime
                         .EvaluatePreExecutionAsync(enriched, token).ConfigureAwait(false);
                     if (!prePolicyResult.IsAllowed)
                         return new ExecutionResult(enriched.Id, enriched.Id, false, prePolicyResult.Reason);
+
+                    // ── Standard plan-and-execute path ──────────────────────────────
 
                     var plan = await _plannerOrchestrator
                         .CreatePlanAsync(null, enriched, token).ConfigureAwait(false);
@@ -316,6 +320,20 @@ namespace Valaiorp.Runtime
                     $"[AgentRuntime] Memory persistence failed for session '{context.SessionId}': {ex.Message}",
                     correlationId: context.SessionId, ct: ct).ConfigureAwait(false);
             }
+        }
+
+        // ── Step execution (for agent-owned loops) ───────────────────────────────
+
+        public async Task<TaskNode> ExecuteStepAsync(
+            PlanStep step,
+            IExecutionContext context,
+            CancellationToken ct = default)
+        {
+            var plan = new Plan { ContextId = context.Id, Steps = new List<PlanStep> { step } };
+            var unit = new ExecutionUnit { Context = context, Plan = plan, ContextId = context.Id };
+            unit.Graph.AddNode(step);
+            await _executor.ExecuteAsync(unit, ct).ConfigureAwait(false);
+            return unit.Graph.Nodes.Values.First();
         }
 
         // ── Mode switching ────────────────────────────────────────────────────────

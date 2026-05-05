@@ -1,7 +1,7 @@
 {
   "version": 3,
   "targets": {
-    "net10.0": {
+    "net10.0-windows7.0": {
       "Microsoft.Extensions.DependencyInjection/10.0.0": {
         "type": "package",
         "dependencies": {
@@ -50,7 +50,10 @@
         },
         "runtime": {
           "bin/placeholder/Valaiorp.BasicTools.dll": {}
-        }
+        },
+        "frameworkReferences": [
+          "Microsoft.WindowsDesktop.App"
+        ]
       },
       "Valaiorp.Configuration/1.0.0": {
         "type": "project",
@@ -413,7 +416,7 @@
     }
   },
   "projectFileDependencyGroups": {
-    "net10.0": [
+    "net10.0-windows7.0": [
       "Microsoft.Extensions.DependencyInjection >= 10.0.0",
       "Valaiorp.BasicTools >= 1.0.0",
       "Valaiorp.Configuration >= 1.0.0",
@@ -454,7 +457,7 @@
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
-        "net10.0"
+        "net10.0-windows"
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
@@ -462,8 +465,8 @@
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
-        "net10.0": {
-          "targetAlias": "net10.0",
+        "net10.0-windows7.0": {
+          "targetAlias": "net10.0-windows",
           "projectReferences": {
             "D:\\._repos\\valaiorp\\BasicTools\\Valaiorp.BasicTools.csproj": {
               "projectPath": "D:\\._repos\\valaiorp\\BasicTools\\Valaiorp.BasicTools.csproj"
@@ -526,8 +529,8 @@
       "SdkAnalysisLevel": "10.0.100"
     },
     "frameworks": {
-      "net10.0": {
-        "targetAlias": "net10.0",
+      "net10.0-windows7.0": {
+        "targetAlias": "net10.0-windows",
         "dependencies": {
           "Microsoft.Extensions.DependencyInjection": {
             "target": "Package",

@@ -493,13 +493,13 @@
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
-    "version": "1.5.2",
+    "version": "1.5.5",
     "restore": {
-      "projectUniqueName": "D:\\._repos\\Valaiorp\\Valaiorp.csproj",
+      "projectUniqueName": "D:\\._repos\\valaiorp\\Valaiorp.csproj",
       "projectName": "Valaiorp",
-      "projectPath": "D:\\._repos\\Valaiorp\\Valaiorp.csproj",
+      "projectPath": "D:\\._repos\\valaiorp\\Valaiorp.csproj",
       "packagesPath": "C:\\Users\\findj\\.nuget\\packages\\",
-      "outputPath": "D:\\._repos\\Valaiorp\\obj\\",
+      "outputPath": "D:\\._repos\\valaiorp\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -521,72 +521,72 @@
         "net10.0": {
           "targetAlias": "net10.0",
           "projectReferences": {
-            "D:\\._repos\\Valaiorp\\BasicTools\\Valaiorp.BasicTools.csproj": {
-              "projectPath": "D:\\._repos\\Valaiorp\\BasicTools\\Valaiorp.BasicTools.csproj",
+            "D:\\._repos\\valaiorp\\BasicTools\\Valaiorp.BasicTools.csproj": {
+              "projectPath": "D:\\._repos\\valaiorp\\BasicTools\\Valaiorp.BasicTools.csproj",
               "privateAssets": "all"
             },
-            "D:\\._repos\\Valaiorp\\Configuration\\Valaiorp.Configuration.csproj": {
-              "projectPath": "D:\\._repos\\Valaiorp\\Configuration\\Valaiorp.Configuration.csproj",
+            "D:\\._repos\\valaiorp\\Configuration\\Valaiorp.Configuration.csproj": {
+              "projectPath": "D:\\._repos\\valaiorp\\Configuration\\Valaiorp.Configuration.csproj",
               "privateAssets": "all"
             },
-            "D:\\._repos\\Valaiorp\\Core\\Valaiorp.Core.csproj": {
-              "projectPath": "D:\\._repos\\Valaiorp\\Core\\Valaiorp.Core.csproj",
+            "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj": {
+              "projectPath": "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj",
               "privateAssets": "all"
             },
-            "D:\\._repos\\Valaiorp\\Escalation\\Valaiorp.Escalation.csproj": {
-              "projectPath": "D:\\._repos\\Valaiorp\\Escalation\\Valaiorp.Escalation.csproj",
+            "D:\\._repos\\valaiorp\\Escalation\\Valaiorp.Escalation.csproj": {
+              "projectPath": "D:\\._repos\\valaiorp\\Escalation\\Valaiorp.Escalation.csproj",
               "privateAssets": "all"
             },
-            "D:\\._repos\\Valaiorp\\Execution\\Valaiorp.Execution.csproj": {
-              "projectPath": "D:\\._repos\\Valaiorp\\Execution\\Valaiorp.Execution.csproj",
+            "D:\\._repos\\valaiorp\\Execution\\Valaiorp.Execution.csproj": {
+              "projectPath": "D:\\._repos\\valaiorp\\Execution\\Valaiorp.Execution.csproj",
               "privateAssets": "all"
             },
-            "D:\\._repos\\Valaiorp\\Knowledge\\Valaiorp.Knowledge.csproj": {
-              "projectPath": "D:\\._repos\\Valaiorp\\Knowledge\\Valaiorp.Knowledge.csproj",
+            "D:\\._repos\\valaiorp\\Knowledge\\Valaiorp.Knowledge.csproj": {
+              "projectPath": "D:\\._repos\\valaiorp\\Knowledge\\Valaiorp.Knowledge.csproj",
               "privateAssets": "all"
             },
-            "D:\\._repos\\Valaiorp\\LlmProviders\\Valaiorp.LlmProviders.csproj": {
-              "projectPath": "D:\\._repos\\Valaiorp\\LlmProviders\\Valaiorp.LlmProviders.csproj",
+            "D:\\._repos\\valaiorp\\LlmProviders\\Valaiorp.LlmProviders.csproj": {
+              "projectPath": "D:\\._repos\\valaiorp\\LlmProviders\\Valaiorp.LlmProviders.csproj",
               "privateAssets": "all"
             },
-            "D:\\._repos\\Valaiorp\\Logging\\Valaiorp.Logging.csproj": {
-              "projectPath": "D:\\._repos\\Valaiorp\\Logging\\Valaiorp.Logging.csproj",
+            "D:\\._repos\\valaiorp\\Logging\\Valaiorp.Logging.csproj": {
+              "projectPath": "D:\\._repos\\valaiorp\\Logging\\Valaiorp.Logging.csproj",
               "privateAssets": "all"
             },
-            "D:\\._repos\\Valaiorp\\Memory\\Valaiorp.Memory.csproj": {
-              "projectPath": "D:\\._repos\\Valaiorp\\Memory\\Valaiorp.Memory.csproj",
+            "D:\\._repos\\valaiorp\\Memory\\Valaiorp.Memory.csproj": {
+              "projectPath": "D:\\._repos\\valaiorp\\Memory\\Valaiorp.Memory.csproj",
               "privateAssets": "all"
             },
-            "D:\\._repos\\Valaiorp\\Modules\\Valaiorp.Modules.csproj": {
-              "projectPath": "D:\\._repos\\Valaiorp\\Modules\\Valaiorp.Modules.csproj",
+            "D:\\._repos\\valaiorp\\Modules\\Valaiorp.Modules.csproj": {
+              "projectPath": "D:\\._repos\\valaiorp\\Modules\\Valaiorp.Modules.csproj",
               "privateAssets": "all"
             },
-            "D:\\._repos\\Valaiorp\\MultiAgent\\Valaiorp.MultiAgent.csproj": {
-              "projectPath": "D:\\._repos\\Valaiorp\\MultiAgent\\Valaiorp.MultiAgent.csproj",
+            "D:\\._repos\\valaiorp\\MultiAgent\\Valaiorp.MultiAgent.csproj": {
+              "projectPath": "D:\\._repos\\valaiorp\\MultiAgent\\Valaiorp.MultiAgent.csproj",
               "privateAssets": "all"
             },
-            "D:\\._repos\\Valaiorp\\Observability\\Valaiorp.Observability.csproj": {
-              "projectPath": "D:\\._repos\\Valaiorp\\Observability\\Valaiorp.Observability.csproj",
+            "D:\\._repos\\valaiorp\\Observability\\Valaiorp.Observability.csproj": {
+              "projectPath": "D:\\._repos\\valaiorp\\Observability\\Valaiorp.Observability.csproj",
               "privateAssets": "all"
             },
-            "D:\\._repos\\Valaiorp\\Planner\\Valaiorp.Planner.csproj": {
-              "projectPath": "D:\\._repos\\Valaiorp\\Planner\\Valaiorp.Planner.csproj",
+            "D:\\._repos\\valaiorp\\Planner\\Valaiorp.Planner.csproj": {
+              "projectPath": "D:\\._repos\\valaiorp\\Planner\\Valaiorp.Planner.csproj",
               "privateAssets": "all"
             },
-            "D:\\._repos\\Valaiorp\\Policy\\Valaiorp.Policy.csproj": {
-              "projectPath": "D:\\._repos\\Valaiorp\\Policy\\Valaiorp.Policy.csproj",
+            "D:\\._repos\\valaiorp\\Policy\\Valaiorp.Policy.csproj": {
+              "projectPath": "D:\\._repos\\valaiorp\\Policy\\Valaiorp.Policy.csproj",
               "privateAssets": "all"
             },
-            "D:\\._repos\\Valaiorp\\Retry\\Valaiorp.Retry.csproj": {
-              "projectPath": "D:\\._repos\\Valaiorp\\Retry\\Valaiorp.Retry.csproj",
+            "D:\\._repos\\valaiorp\\Retry\\Valaiorp.Retry.csproj": {
+              "projectPath": "D:\\._repos\\valaiorp\\Retry\\Valaiorp.Retry.csproj",
               "privateAssets": "all"
             },
-            "D:\\._repos\\Valaiorp\\Runtime\\Valaiorp.Runtime.csproj": {
-              "projectPath": "D:\\._repos\\Valaiorp\\Runtime\\Valaiorp.Runtime.csproj",
+            "D:\\._repos\\valaiorp\\Runtime\\Valaiorp.Runtime.csproj": {
+              "projectPath": "D:\\._repos\\valaiorp\\Runtime\\Valaiorp.Runtime.csproj",
               "privateAssets": "all"
             },
-            "D:\\._repos\\Valaiorp\\Tools\\Valaiorp.Tools.csproj": {
-              "projectPath": "D:\\._repos\\Valaiorp\\Tools\\Valaiorp.Tools.csproj",
+            "D:\\._repos\\valaiorp\\Tools\\Valaiorp.Tools.csproj": {
+              "projectPath": "D:\\._repos\\valaiorp\\Tools\\Valaiorp.Tools.csproj",
               "privateAssets": "all"
             }
           }

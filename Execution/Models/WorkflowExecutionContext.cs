@@ -2,6 +2,7 @@ namespace Valaiorp.Execution.Models
 {
     using Valaiorp.Core.Contracts;
     using Valaiorp.Core.Enums;
+    using Valaiorp.Execution.Budget;
 
     public sealed class WorkflowExecutionContext : IExecutionContext
     {
@@ -26,5 +27,6 @@ namespace Valaiorp.Execution.Models
         public IDictionary<string, object> WorkflowState => _workflowState;
         public ExecutionMode Mode { get; set; } = ExecutionMode.Sequential;
         public bool IsAgentic { get; set; }
+        public AgentBudget? Budget { get; set; }
     }
 }

@@ -4,6 +4,21 @@
         <name>Valaiorp.Planner</name>
     </assembly>
     <members>
+        <member name="T:Valaiorp.Planner.Evaluation.PlanEvaluator">
+             <summary>
+             Scores a plan for confidence and validates structural correctness before execution.
+            
+             Confidence deductions:
+               - Step with no name                     : -0.05 per step
+               - Step with no toolId/agentId/moduleId  : -0.05 per step (warning, not issue)
+               - Step referencing unregistered tool    : -0.15 per step (requires ToolRegistry)
+               - Loop-end with unknown loopStartId     : -0.10 per step
+               - Governance risk score                 : -(RiskScore × 0.1)
+            
+             Recommendation thresholds:
+               >= 0.70 → Proceed  |  >= 0.40 → Review  |  below → Reject
+             </summary>
+        </member>
         <member name="P:Valaiorp.Planner.Models.PlanStep.AgentId">
             <summary>
             Target agent ID for multi-agent delegation.
@@ -51,6 +66,18 @@
             Name of the corresponding <see cref="P:Valaiorp.Planner.Models.PlanStep.IsLoopStart"/> step.
             Required on loop-end steps so the executor can locate the loop body.
             </summary>
+        </member>
+        <member name="P:Valaiorp.Planner.Models.PlanEvaluation.ConfidenceScore">
+            <summary>0.0 (no confidence) to 1.0 (full confidence).</summary>
+        </member>
+        <member name="P:Valaiorp.Planner.Models.PlanEvaluation.IsValid">
+            <summary>True when no blocking issues were found.</summary>
+        </member>
+        <member name="P:Valaiorp.Planner.Models.PlanEvaluation.Issues">
+            <summary>Blocking problems that should prevent execution (or trigger Review).</summary>
+        </member>
+        <member name="P:Valaiorp.Planner.Models.PlanEvaluation.Warnings">
+            <summary>Non-blocking observations that may reduce confidence.</summary>
         </member>
         <member name="P:Valaiorp.Planner.Models.StepCondition.DependsOn">
             <summary>Step IDs this condition checks for completion (StepDependencyCheck type).</summary>

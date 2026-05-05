@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Valaiorp.Tools")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f7ba7651d562201e0165d75bbc097e6ff0c15cb8")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d78f43b75fa37e653e900a89cb3333566d7b510a")]
 [assembly: System.Reflection.AssemblyProductAttribute("Valaiorp.Tools")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Valaiorp.Tools")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

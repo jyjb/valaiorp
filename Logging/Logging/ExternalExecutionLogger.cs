@@ -4,16 +4,13 @@ namespace Valaiorp.Tools.Enhanced.Logging
     using Valaiorp.Core.Contracts;
     using Valaiorp.Execution.Models;
     using Valaiorp.Planner.Models;
-    using Valaiorp.BasicTools.FileTools;
 
     public sealed class ExternalExecutionLogger : IExecutionLogger
     {
-        private readonly JsonlTool _jsonlTool;
         private readonly string _logDirectory;
 
         public ExternalExecutionLogger(string logDirectory = "logs")
         {
-            _jsonlTool = new JsonlTool();
             _logDirectory = logDirectory;
             Directory.CreateDirectory(_logDirectory);
         }
@@ -71,9 +68,9 @@ namespace Valaiorp.Tools.Enhanced.Logging
                 Dependencies = plan.Dependencies
             };
 
-            var logFilePath = Path.Combine(_logDirectory, $"plan_{plan.Id}.jsonl");
-            var logLine = JsonSerializer.Serialize(logEntry);
-            await _jsonlTool.WriteAsync(logFilePath, logLine, ct).ConfigureAwait(false);
+            var logFilePath = Path.Combine(_logDirectory, $"run_{context.Id}.jsonl");
+            var logLine = JsonSerializer.Serialize(logEntry) + Environment.NewLine;
+            await File.AppendAllTextAsync(logFilePath, logLine, ct).ConfigureAwait(false);
         }
 
         public async Task LogRunAsync(ExecutionUnit unit, IExecutionContext context, CancellationToken ct = default)
@@ -92,9 +89,9 @@ namespace Valaiorp.Tools.Enhanced.Logging
                 Error = unit.Exception?.Message
             };
 
-            var logFilePath = Path.Combine(_logDirectory, $"run_{unit.Id}.jsonl");
-            var logLine = JsonSerializer.Serialize(logEntry);
-            await _jsonlTool.WriteAsync(logFilePath, logLine, ct).ConfigureAwait(false);
+            var logFilePath = Path.Combine(_logDirectory, $"run_{context.Id}.jsonl");
+            var logLine = JsonSerializer.Serialize(logEntry) + Environment.NewLine;
+            await File.AppendAllTextAsync(logFilePath, logLine, ct).ConfigureAwait(false);
         }
 
         public async Task LogStepAsync(TaskNode node, IExecutionContext context, CancellationToken ct = default)
@@ -124,9 +121,9 @@ namespace Valaiorp.Tools.Enhanced.Logging
                 } : null
             };
 
-            var logFilePath = Path.Combine(_logDirectory, $"step_{node.Id}.jsonl");
-            var logLine = JsonSerializer.Serialize(logEntry);
-            await _jsonlTool.WriteAsync(logFilePath, logLine, ct).ConfigureAwait(false);
+            var logFilePath = Path.Combine(_logDirectory, $"run_{context.Id}.jsonl");
+            var logLine = JsonSerializer.Serialize(logEntry) + Environment.NewLine;
+            await File.AppendAllTextAsync(logFilePath, logLine, ct).ConfigureAwait(false);
         }
     }
 }

@@ -1,9 +1,12 @@
 namespace Valaiorp.Execution.Workflow
 {
+    using System.Diagnostics;
     using Valaiorp.Core.Contracts;
     using Valaiorp.Core.Enums;
+    using Valaiorp.Execution.Budget;
     using Valaiorp.Execution.Executors;
     using Valaiorp.Execution.Models;
+    using Valaiorp.Execution.Replay;
     using Valaiorp.Tools.Resolvers;
 
     public sealed class WorkflowExecutor
@@ -20,10 +23,13 @@ namespace Valaiorp.Execution.Workflow
         public async Task<IExecutionResult> ExecuteAsync(
             IReadOnlyList<WorkflowStep> steps,
             WorkflowExecutionContext context,
+            ReplayEngine? replayEngine = null,
             CancellationToken ct = default)
         {
             if (steps.Count == 0)
                 return new ExecutionResult(context.Id, context.Id, false, "No steps provided in workflow.");
+
+            var budget = context.Budget != null ? new BudgetTracker(context.Budget) : null;
 
             // Loop counters are keyed on the loop-START step ID and local to this execution.
             // Using a local dictionary avoids any shared state across concurrent ExecuteAsync calls.
@@ -50,14 +56,21 @@ namespace Valaiorp.Execution.Workflow
                     && !string.IsNullOrEmpty(currentStep.ToolId)
                     && !string.IsNullOrEmpty(currentStep.Input))
                 {
+                    budget?.RecordToolCall();
+                    budget?.CheckTime();
+
+                    var sw = Stopwatch.StartNew();
                     var result = await _toolResolver.ExecuteToolAsync(
                         currentStep.ToolId,
                         context,
                         new Dictionary<string, object> { ["input"] = currentStep.Input },
                         ct)
                     .ConfigureAwait(false);
+                    sw.Stop();
 
+                    replayEngine?.Capture(currentStep, context, result, sw.Elapsed);
                     executionResults.Add(result);
+
                     if (!result.IsSuccess)
                         return new ExecutionResult(context.Id, context.Id, false,
                             $"Step '{currentStep.Name}' failed: {result.ErrorMessage}", result.Exception);

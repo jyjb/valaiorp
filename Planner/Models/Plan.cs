@@ -18,6 +18,7 @@ namespace Valaiorp.Planner.Models
         public PlanMetadata? Metadata { get; set; }
         public IDictionary<string, object?> WorkflowState { get; set; } = new Dictionary<string, object?>();
         public PlanDependencies? Dependencies { get; set; }
+        public PlanEvaluation? Evaluation { get; set; }
     }
 
     public sealed class PlanStep

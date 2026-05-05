@@ -497,8 +497,11 @@ valaiorp/
 │                       # PiiGuardrail, PromptInjectionGuardrail, BannedKeywordsGuardrail,
 │                       # ContentLengthGuardrail, ToolScopeGuardrail, DataClassificationGuardrail
 ├── Planner/            # InternalPlanner, LlmPlanner, AutonomyAwarePlanner, ManualPlanner,
-│                       # PlannerOrchestrator, plan.schema.json, plan.sample.json
-├── Execution/          # ParallelExecutor, variable binding, transactions, workflow builder
+│                       # PlannerOrchestrator, PlanEvaluator, IPlanEvaluator,
+│                       # plan.schema.json, plan.sample.json
+├── Execution/          # ParallelExecutor, WorkflowExecutor, variable binding, transactions,
+│                       # ReplayEngine, StepSnapshot, ExecutionSnapshot,
+│                       # AgentBudget, BudgetTracker, BudgetExceededException
 ├── Retry/              # MaxAttemptsPolicy, ExponentialBackoffPolicy, CircuitBreakerPolicy
 ├── Logging/            # Plan/step/run logging — in-memory or JSONL files
 ├── Observability/      # Console logger, tracing, metrics
@@ -538,6 +541,9 @@ valaiorp/
 | **Guardrail Pipeline** | Block → Redact (chains sanitised content) → Warn → Escalate — first Block wins |
 | **Human Escalation** | Approval workflows · override hooks · manual intervention |
 | **Multi-Agent** | Orchestrator/sub-agent delegation with parallel dispatch and conversation memory |
+| **Execution Replay** | Per-step state snapshots — deterministic re-run from any step; time-travel debugging via `ReplayEngine` |
+| **Agent Budgeting** | Max tool calls, max tokens, and max execution time per workflow — `BudgetTracker` enforces limits at runtime |
+| **Planner Evaluation** | Confidence scoring (0–1) + structural validation before execution — `Proceed / Review / Reject` recommendation via `PlanEvaluator` |
 | **File-backed Memory** | Short-term, long-term, and conversation memory backed by JSONL files by default — swap for Redis/SQL |
 | **SQL Logging** | `AddSqlPersistence()` layers SQL execution logging alongside mandatory local JSONL logs |
 | **LLM Providers** | 7 built-in profiles: Anthropic · OpenAI · Ollama · Gemini · Mistral · Cohere · NVIDIA — single `GenericLlmClient`, no vendor SDK |

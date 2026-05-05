@@ -193,6 +193,9 @@ await bot.StartAsync();
 | **6 Built-in Guardrails** | PII redaction · prompt injection · banned keywords · tool scope · data classification |
 | **Human Escalation** | Approval workflows · override hooks · manual intervention |
 | **Multi-Agent** | Orchestrator/sub-agent delegation with parallel dispatch |
+| **Execution Replay** | Per-step state snapshots — deterministic re-run from any step; time-travel debugging via `ReplayEngine` |
+| **Agent Budgeting** | Max tool calls, max tokens, and max execution time per workflow — `BudgetTracker` enforces limits at runtime |
+| **Planner Evaluation** | Confidence scoring (0–1) + structural validation before execution — `Proceed / Review / Reject` recommendation via `PlanEvaluator` |
 | **File-backed Memory** | Short-term, long-term, and conversation memory backed by JSONL files by default — swap for Redis/SQL |
 | **SQL Logging** | `AddSqlPersistence()` layers SQL execution logging alongside the mandatory local JSONL log |
 | **LLM Providers** | 7 built-in profiles: Anthropic · OpenAI · Ollama · Gemini · Mistral · Cohere · NVIDIA — single `GenericLlmClient`, no vendor SDK |
@@ -214,8 +217,8 @@ Valaiorp/
 ├── Knowledge/      # IKnowledgeProvider — RAG integration
 ├── Policy/         # PolicyRule, IPolicyEngine
 ├── Guardrails/     # IGuardrail, IGuardrailPipeline, 6 built-in guardrails
-├── Planner/        # Planners, PlannerOrchestrator, plan.schema.json
-├── Execution/      # ParallelExecutor, variable binding, transactions
+├── Planner/        # Planners, PlannerOrchestrator, PlanEvaluator, plan.schema.json
+├── Execution/      # ParallelExecutor, WorkflowExecutor, ReplayEngine, BudgetTracker, variable binding, transactions
 ├── Retry/          # MaxAttempts, ExponentialBackoff, CircuitBreaker policies
 ├── Logging/        # Plan/step/run logging
 ├── Observability/  # Console logger, tracing, metrics

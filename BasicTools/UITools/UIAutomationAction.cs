@@ -17,6 +17,7 @@ namespace Valaiorp.BasicTools.UITools
         SelectOption,
         SendKeys,
         GetAttribute,
+        GetPageText,
     }
 }
 

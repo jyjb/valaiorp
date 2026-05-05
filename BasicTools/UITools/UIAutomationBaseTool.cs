@@ -2,6 +2,7 @@
 
 namespace Valaiorp.BasicTools.UITools
 {
+    using System.Diagnostics;
     using System.Drawing;
     using System.Drawing.Imaging;
     using System.Runtime.InteropServices;
@@ -19,6 +20,9 @@ namespace Valaiorp.BasicTools.UITools
         public abstract string Description { get; }
         public abstract ToolType Type { get; }
         public abstract IReadOnlyDictionary<string, object> Metadata { get; }
+
+        private static readonly HashSet<string> BrowserProcessNames = new(StringComparer.OrdinalIgnoreCase)
+            { "msedge", "chrome", "firefox", "brave", "opera" };
 
         // Known address bar names across Edge, Chrome, Firefox
         private static readonly string[] AddressBarNames =
@@ -49,9 +53,24 @@ namespace Valaiorp.BasicTools.UITools
         {
             try
             {
-                var parts = parameters.ParsePipeInput();
-                if (parts.Length == 0)
-                    return ToolResult.BadRequest(new { Message = "Parameter 'input' is required. Format: Action|param1|param2" });
+                // Accept pipe-delimited "input" OR separate "action"/"element"/"url"/"value" params
+                string[] parts;
+                var raw = parameters.GetString("input");
+                if (!string.IsNullOrWhiteSpace(raw))
+                {
+                    parts = raw.Split('|', 3);
+                }
+                else
+                {
+                    var action2 = parameters.GetString("action");
+                    if (string.IsNullOrWhiteSpace(action2))
+                        return ToolResult.BadRequest(new { Message = "Parameter 'input' is required. Format: Action|param1|param2" });
+                    var p1b = parameters.GetString("element", parameters.GetString("url"));
+                    var p2b = parameters.GetString("value", parameters.GetString("automationId"));
+                    parts = string.IsNullOrEmpty(p2b)
+                        ? [action2, p1b]
+                        : [action2, p1b, p2b];
+                }
 
                 var actionStr = parts[0];
                 var p1 = parts.Length > 1 ? parts[1] : "";
@@ -95,10 +114,17 @@ namespace Valaiorp.BasicTools.UITools
                     UIAutomationAction.SelectOption    => await SelectOptionAsync(p1, p2, ct).ConfigureAwait(false),
                     UIAutomationAction.SendKeys        => await SendKeysAsync(p1, ct).ConfigureAwait(false),
                     UIAutomationAction.GetAttribute    => await GetAttributeAsync(p1, p2, ct).ConfigureAwait(false),
+                    UIAutomationAction.GetPageText     => await GetPageTextAsync(ct).ConfigureAwait(false),
                     _ => throw new InvalidOperationException($"Unsupported action: {actionStr}")
                 };
 
                 return ToolResult.Ok(new { Action = actionStr, Result = result });
+            }
+            catch (InvalidOperationException ex)
+            {
+                // UIA errors (unsupported pattern, element gone stale, etc.) are recoverable —
+                // return as observable text so the agent can adapt rather than aborting the run.
+                return ToolResult.Ok(new { Action = "Error", Result = ex.Message });
             }
             catch (Exception ex) { return ToolResult.Error(ex); }
         }
@@ -143,7 +169,29 @@ namespace Valaiorp.BasicTools.UITools
             }
 
             if (addressBar == null)
-                return "No browser address bar found. Ensure Edge, Chrome, or Firefox is open.";
+            {
+                // No browser open — launch Edge and retry
+                try
+                {
+                    Process.Start(new ProcessStartInfo("msedge.exe", "--new-window") { UseShellExecute = true });
+                    await Task.Delay(3000, ct).ConfigureAwait(false);
+                }
+                catch
+                {
+                    return "No browser address bar found and could not launch Edge. Ensure Edge, Chrome, or Firefox is open.";
+                }
+                foreach (var barName in AddressBarNames)
+                {
+                    addressBar = searchRoot.FindFirst(TreeScope.Descendants,
+                        new AndCondition(
+                            new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.Edit),
+                            new PropertyCondition(AutomationElement.NameProperty, barName,
+                                PropertyConditionFlags.IgnoreCase)));
+                    if (addressBar != null) break;
+                }
+                if (addressBar == null)
+                    return "Launched Edge but address bar still not found after 3 s. Try again.";
+            }
 
             addressBar.SetFocus();
             if (addressBar.GetCurrentPattern(ValuePattern.Pattern) is not ValuePattern vp)
@@ -188,10 +236,16 @@ namespace Valaiorp.BasicTools.UITools
             var el = GetRootElement().FindFirst(TreeScope.Descendants,
                 new PropertyCondition(AutomationElement.NameProperty, elementName));
             if (el == null) return "Not Found";
-            // Prefer ValuePattern text over Name (e.g. text boxes)
-            if (el.GetCurrentPattern(ValuePattern.Pattern) is ValuePattern vp)
-                return vp.Current.Value;
-            return el.Current.Name;
+            try
+            {
+                if (el.GetCurrentPattern(ValuePattern.Pattern) is ValuePattern vp)
+                    return vp.Current.Value;
+                return el.Current.Name;
+            }
+            catch (InvalidOperationException)
+            {
+                return "Not Found";
+            }
         }
 
         public async Task<string> SetTextAsync(string elementName, string text, CancellationToken ct = default)
@@ -343,6 +397,42 @@ namespace Valaiorp.BasicTools.UITools
                 "processid"    => el.Current.ProcessId.ToString(),
                 _ => $"Unknown attribute '{attributeName}'. Supported: name, automationid, controltype, isenabled, isvisible, helptext, value, classname, processid"
             };
+        }
+
+        // Returns all visible text from the active browser page via TextPattern on the Document element.
+        // Searches specifically within browser process windows to avoid picking up VS Code or other editors.
+        // Capped at 8000 chars to keep LLM context manageable.
+        public async Task<string> GetPageTextAsync(CancellationToken ct = default)
+        {
+            await Task.Yield();
+            var root = GetRootElement();
+
+            var topWindows = root.FindAll(TreeScope.Children,
+                new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.Window));
+
+            foreach (AutomationElement win in topWindows)
+            {
+                try
+                {
+                    var procName = Process.GetProcessById(win.Current.ProcessId).ProcessName;
+                    if (!BrowserProcessNames.Contains(procName)) continue;
+                }
+                catch { continue; }
+
+                var doc = win.FindFirst(TreeScope.Descendants,
+                    new PropertyCondition(AutomationElement.ControlTypeProperty, ControlType.Document));
+                if (doc == null) continue;
+
+                try
+                {
+                    if (doc.GetCurrentPattern(TextPattern.Pattern) is not TextPattern tp) continue;
+                    var text = tp.DocumentRange.GetText(8000);
+                    if (!string.IsNullOrWhiteSpace(text)) return text;
+                }
+                catch (InvalidOperationException) { }
+            }
+
+            return "No browser page text found. Ensure Edge, Chrome, or Firefox is open with a loaded page.";
         }
     }
 }

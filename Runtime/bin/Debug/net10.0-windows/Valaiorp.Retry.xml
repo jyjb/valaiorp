@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Valaiorp.Retry</name>
+    </assembly>
+    <members>
+        <member name="T:Valaiorp.Retry.Policies.CircuitBreakerRetryPolicy">
+            <summary>
+            Trips after <see cref="P:Valaiorp.Retry.Policies.CircuitBreakerRetryPolicy.FailureThreshold"/> consecutive failures on the same
+            circuit key (session + tool) and holds the circuit open for <see cref="P:Valaiorp.Retry.Policies.CircuitBreakerRetryPolicy.ResetTimeout"/>.
+            Thread-safe: all state mutations on a <see cref="T:Valaiorp.Retry.Policies.CircuitBreakerRetryPolicy.CircuitState"/> are lock-guarded.
+            </summary>
+        </member>
+        <member name="M:Valaiorp.Retry.Policies.CircuitBreakerRetryPolicy.Reset(System.String,System.String)">
+            <summary>
+            Manually resets the circuit for a given session/tool combination.
+            Useful in tests and admin endpoints.
+            </summary>
+        </member>
+    </members>
+</doc>

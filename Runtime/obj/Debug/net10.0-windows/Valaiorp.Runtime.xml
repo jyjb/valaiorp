@@ -1,0 +1,164 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Valaiorp.Runtime</name>
+    </assembly>
+    <members>
+        <member name="M:Valaiorp.Runtime.Bootstrap.RuntimeBuilder.BuildBot(System.String,System.String,Valaiorp.Configuration.Config.ValaiorpConfig,Valaiorp.Core.Contracts.IWorkQueue,System.Func{Valaiorp.Core.Contracts.IWorkItem,Valaiorp.Core.Contracts.IExecutionContext},System.Action{Microsoft.Extensions.DependencyInjection.IServiceCollection},System.Action{Valaiorp.Tools.Registries.ModuleRegistry},System.Int32,System.Int32)">
+             <summary>
+             Builds a BotWorker — a self-contained, continuously running bot that pulls
+             IWorkItems from a shared IWorkQueue and executes each one through AgentRuntime.
+            
+             Deploy N BotWorkers across N machines pointing at the same IWorkQueue backend
+             (swap InMemoryWorkQueue for a SQL / Service Bus / RabbitMQ implementation).
+            
+             Call worker.Start() after building. Dispose with await worker.DisposeAsync().
+             </summary>
+             <param name="botId">Logical bot name shared across all instances of this bot type.</param>
+             <param name="config">
+               Workflow config. Call config.ApplyProfile() before passing, or let BuildBot do it.
+               WorkflowType and AiParticipation are applied automatically.
+             </param>
+             <param name="queue">
+               Shared queue. Defaults to InMemoryWorkQueue (single-process only).
+               For multi-machine, pass a shared broker-backed implementation.
+             </param>
+             <param name="contextFactory">
+               Converts an IWorkItem into an IExecutionContext for the runtime.
+               Defaults to an ExecutionContext with SessionId=WorkflowId, UserId=botId,
+               Metadata populated from the item's Payload.
+             </param>
+             <param name="maxConcurrency">Max items processed in parallel per BotWorker instance.</param>
+             <param name="maxAttempts">Max retry attempts before dead-lettering a failed item.</param>
+        </member>
+        <member name="T:Valaiorp.Runtime.Bot.BotWorkerHealth">
+            <summary>
+            Point-in-time health snapshot returned by <see cref="M:Valaiorp.Runtime.Bot.BotWorker.GetHealthAsync(System.Threading.CancellationToken)"/>.
+            </summary>
+        </member>
+        <member name="M:Valaiorp.Runtime.Bot.BotWorkerHealth.#ctor(System.Boolean,System.Int32,System.Int32,System.Int32,System.Nullable{System.DateTimeOffset})">
+            <summary>
+            Point-in-time health snapshot returned by <see cref="M:Valaiorp.Runtime.Bot.BotWorker.GetHealthAsync(System.Threading.CancellationToken)"/>.
+            </summary>
+        </member>
+        <member name="T:Valaiorp.Runtime.Bot.BotWorker">
+             <summary>
+             Continuously running bot that pulls IWorkItems from a shared IWorkQueue and
+             executes each one through AgentRuntime.
+            
+             Deploy N BotWorkers across N machines all pointing at the same IWorkQueue
+             backend (SqlWorkQueue for multi-machine, InMemoryWorkQueue for single-process).
+            
+             Lifecycle:
+               StartAsync()  — registers a run, begins the poll loop (non-blocking)
+               StopAsync()   — drains in-flight work up to drainTimeout, ends the run, then stops
+               DisposeAsync() — stop + dispose the underlying AgentRuntime
+            
+             Retry / dead-letter (at queue level, outer layer above tool-level retry):
+               On success               → MarkCompletedAsync
+               On failure + retry left  → MarkFailedAsync (item re-queued automatically)
+               On failure + max reached → MarkFailedAsync (item dead-lettered automatically)
+             </summary>
+        </member>
+        <member name="M:Valaiorp.Runtime.Bot.BotWorker.StartAsync(System.Threading.CancellationToken)">
+            <summary>Registers a queue run and starts the poll loop (non-blocking).</summary>
+        </member>
+        <member name="M:Valaiorp.Runtime.Bot.BotWorker.StopAsync(System.TimeSpan)">
+            <summary>
+            Signals stop, waits up to <paramref name="drainTimeout"/> for in-flight items to
+            complete, then ends the queue run. Defaults to 30 seconds. Logs a warning if the
+            drain window is exceeded so that stuck tasks are visible in production.
+            </summary>
+        </member>
+        <member name="M:Valaiorp.Runtime.Bot.BotWorker.GetHealthAsync(System.Threading.CancellationToken)">
+            <summary>
+            Returns a point-in-time health snapshot, including queue depths and the last
+            heartbeat timestamp. The heartbeat advances once per poll iteration; a stale
+            timestamp indicates the loop has stalled.
+            </summary>
+        </member>
+        <member name="M:Valaiorp.Runtime.DependencyInjection.ServiceCollectionExtensions.AddSqlPersistence(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Func{System.Data.Common.DbConnection})">
+             <summary>
+             Adds SQL-backed execution logging alongside the mandatory local JSONL logger.
+             The <paramref name="connectionFactory"/> should return a new, unopened DbConnection
+             each time it is called (one per log write).
+            
+             Call this after AddAgenticAIRuntime:
+               services.AddAgenticAIRuntime(config)
+                       .AddSqlPersistence(() => new SqlConnection(connStr));
+            
+             At app startup also call:
+               await sp.GetRequiredService&lt;SqlExecutionLogger&gt;().CreateSchemaAsync();
+             </summary>
+        </member>
+        <member name="T:Valaiorp.Runtime.Logging.SqlExecutionLogger">
+             <summary>
+             SQL-backed execution logger. Works with any ADO.NET-compatible provider
+             (SQL Server, PostgreSQL, SQLite, MySQL, Oracle).
+            
+             Subclass and override CreateConnection() to supply the connection, or use
+             the factory constructor for inline registration:
+               services.AddSqlPersistence(() => new SqlConnection(connStr));
+            
+             Call CreateSchemaAsync() once at startup to create the execution_logs table.
+             </summary>
+        </member>
+        <member name="M:Valaiorp.Runtime.Logging.SqlExecutionLogger.CreateSchemaAsync(System.Threading.CancellationToken)">
+            <summary>Creates the execution_logs table if it does not exist. Call once at startup.</summary>
+        </member>
+        <member name="T:Valaiorp.Runtime.Logging.InlineSqlExecutionLogger">
+            <summary>
+            Concrete SqlExecutionLogger backed by an inline connection factory.
+            Used internally by services.AddSqlPersistence(factory).
+            </summary>
+        </member>
+        <member name="T:Valaiorp.Runtime.Queue.InMemoryWorkQueue">
+            <summary>
+            In-memory queue. Safe for single-process use (dev/test/single-bot).
+            For multi-machine bots replace with SqlWorkQueue or a broker-backed implementation.
+            </summary>
+        </member>
+        <member name="T:Valaiorp.Runtime.Queue.JsonlWorkQueue">
+             <summary>
+             JSONL file-backed queue. Suitable for single local bot, no external DB needed.
+             Each work item is stored as one JSON line in the file. State is persisted on
+             every status change so execution survives process restarts.
+            
+             File path convention:
+               {directory}/{queueId}.queue.jsonl   — work items
+               {directory}/{queueId}.runs.jsonl    — run records
+             </summary>
+        </member>
+        <member name="T:Valaiorp.Runtime.Queue.SqlWorkQueue">
+             <summary>
+             SQL-backed work queue. Works with any ADO.NET-compatible provider:
+             SQL Server, PostgreSQL, SQLite, MySQL, Oracle.
+            
+             Subclass and override CreateConnection() to provide your connection.
+             The SQL schema is standard ANSI SQL — see CreateSchemaAsync() for DDL.
+            
+             Multi-machine safe: GetNextItemAsync uses a SELECT FOR UPDATE / UPDATE with
+             optimistic locking so multiple bots never claim the same item.
+            
+             Usage (SQL Server example):
+               public sealed class MySqlQueue : SqlWorkQueue
+               {
+                   protected override DbConnection CreateConnection()
+                       => new SqlConnection("Server=prod;Database=BotQueue;...");
+               }
+             </summary>
+        </member>
+        <member name="M:Valaiorp.Runtime.Queue.SqlWorkQueue.CreateSchemaAsync(System.Threading.CancellationToken)">
+            <summary>
+            Creates the required tables if they do not exist.
+            Call once at application startup.
+            </summary>
+        </member>
+        <member name="M:Valaiorp.Runtime.AgentRuntime.EnrichContextWithRagAndMemoryAsync(Valaiorp.Core.Contracts.IExecutionContext,System.Threading.CancellationToken)">
+            <summary>
+            Hydrates the context's PromptContext with RAG results and memory entries
+            before handing it to the planner.
+            </summary>
+        </member>
+    </members>
+</doc>
