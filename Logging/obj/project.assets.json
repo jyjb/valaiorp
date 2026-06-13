@@ -330,11 +330,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\._repos\\valaiorp\\Logging\\Valaiorp.Logging.csproj",
+      "projectUniqueName": "Z:\\._repos\\valaiorp\\Logging\\Valaiorp.Logging.csproj",
       "projectName": "Valaiorp.Logging",
-      "projectPath": "D:\\._repos\\valaiorp\\Logging\\Valaiorp.Logging.csproj",
+      "projectPath": "Z:\\._repos\\valaiorp\\Logging\\Valaiorp.Logging.csproj",
       "packagesPath": "C:\\Users\\findj\\.nuget\\packages\\",
-      "outputPath": "D:\\._repos\\valaiorp\\Logging\\obj\\",
+      "outputPath": "Z:\\._repos\\valaiorp\\Logging\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -356,23 +356,23 @@
         "net10.0": {
           "targetAlias": "net10.0",
           "projectReferences": {
-            "D:\\._repos\\valaiorp\\BasicTools\\Valaiorp.BasicTools.csproj": {
-              "projectPath": "D:\\._repos\\valaiorp\\BasicTools\\Valaiorp.BasicTools.csproj"
+            "Z:\\._repos\\valaiorp\\BasicTools\\Valaiorp.BasicTools.csproj": {
+              "projectPath": "Z:\\._repos\\valaiorp\\BasicTools\\Valaiorp.BasicTools.csproj"
             },
-            "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj": {
-              "projectPath": "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj"
+            "Z:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj": {
+              "projectPath": "Z:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj"
             },
-            "D:\\._repos\\valaiorp\\Execution\\Valaiorp.Execution.csproj": {
-              "projectPath": "D:\\._repos\\valaiorp\\Execution\\Valaiorp.Execution.csproj"
+            "Z:\\._repos\\valaiorp\\Execution\\Valaiorp.Execution.csproj": {
+              "projectPath": "Z:\\._repos\\valaiorp\\Execution\\Valaiorp.Execution.csproj"
             },
-            "D:\\._repos\\valaiorp\\Memory\\Valaiorp.Memory.csproj": {
-              "projectPath": "D:\\._repos\\valaiorp\\Memory\\Valaiorp.Memory.csproj"
+            "Z:\\._repos\\valaiorp\\Memory\\Valaiorp.Memory.csproj": {
+              "projectPath": "Z:\\._repos\\valaiorp\\Memory\\Valaiorp.Memory.csproj"
             },
-            "D:\\._repos\\valaiorp\\Planner\\Valaiorp.Planner.csproj": {
-              "projectPath": "D:\\._repos\\valaiorp\\Planner\\Valaiorp.Planner.csproj"
+            "Z:\\._repos\\valaiorp\\Planner\\Valaiorp.Planner.csproj": {
+              "projectPath": "Z:\\._repos\\valaiorp\\Planner\\Valaiorp.Planner.csproj"
             },
-            "D:\\._repos\\valaiorp\\Tools\\Valaiorp.Tools.csproj": {
-              "projectPath": "D:\\._repos\\valaiorp\\Tools\\Valaiorp.Tools.csproj"
+            "Z:\\._repos\\valaiorp\\Tools\\Valaiorp.Tools.csproj": {
+              "projectPath": "Z:\\._repos\\valaiorp\\Tools\\Valaiorp.Tools.csproj"
             }
           }
         }

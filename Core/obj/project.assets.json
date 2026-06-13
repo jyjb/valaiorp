@@ -14,11 +14,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj",
+      "projectUniqueName": "Z:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj",
       "projectName": "Valaiorp.Core",
-      "projectPath": "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj",
+      "projectPath": "Z:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj",
       "packagesPath": "C:\\Users\\findj\\.nuget\\packages\\",
-      "outputPath": "D:\\._repos\\valaiorp\\Core\\obj\\",
+      "outputPath": "Z:\\._repos\\valaiorp\\Core\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

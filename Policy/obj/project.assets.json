@@ -33,11 +33,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\._repos\\valaiorp\\Policy\\Valaiorp.Policy.csproj",
+      "projectUniqueName": "Z:\\._repos\\valaiorp\\Policy\\Valaiorp.Policy.csproj",
       "projectName": "Valaiorp.Policy",
-      "projectPath": "D:\\._repos\\valaiorp\\Policy\\Valaiorp.Policy.csproj",
+      "projectPath": "Z:\\._repos\\valaiorp\\Policy\\Valaiorp.Policy.csproj",
       "packagesPath": "C:\\Users\\findj\\.nuget\\packages\\",
-      "outputPath": "D:\\._repos\\valaiorp\\Policy\\obj\\",
+      "outputPath": "Z:\\._repos\\valaiorp\\Policy\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -59,8 +59,8 @@
         "net10.0": {
           "targetAlias": "net10.0",
           "projectReferences": {
-            "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj": {
-              "projectPath": "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj"
+            "Z:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj": {
+              "projectPath": "Z:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj"
             }
           }
         }

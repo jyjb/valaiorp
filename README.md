@@ -10,7 +10,7 @@ Valaiorp processes work across four workflow types. The same runtime, tools, mod
 
 | Type | What it does | AI involved | Planner |
 |------|-------------|-------------|---------|
-| **IRPA** | Fixed, code-authored plan. Tools and modules execute exactly as defined. | None | `Deliberative` |
+| **IRPA** | Fixed, code-authored plan. Tools and modules execute exactly as defined. | None | `Reactive` |
 | **AI Workflow** | LLM produces the execution plan once. Steps then run deterministically. | Planning only | `LlmBased` |
 | **AI Agent** | LLM plans and re-plans between steps based on intermediate results. | Planning + re-planning | `LlmBased` |
 | **Agentic** | Fully autonomous — dynamic tool selection, self-directed re-planning, sub-agent spawning. | Full autonomy | `AutonomyAware` |
@@ -42,7 +42,7 @@ var config = new ValaiorpConfig
 
 | WorkflowType | AiParticipation | PlannerType | Level | DynamicPlan | ToolSelect | ApprovalRequired |
 |---|---|---|---|---|---|---|
-| `Irpa` | any | `Deliberative` \| `Manual` | 0.0 | ✗ | ✗ | ✗ |
+| `Irpa` | any | `Reactive` | 0.0 | ✗ | ✗ | ✗ |
 | `AiWorkflow` | `ObserveOnly` | `LlmBased` | 0.1 | ✗ | ✗ | ✓ |
 | `AiWorkflow` | `ObserveAndSuggest` | `LlmBased` | 0.3 | ✗ | ✗ | ✓ |
 | `AiWorkflow` | `ObserveAndReact` | `LlmBased` | 0.4 | ✓ | ✗ | ✓ |
@@ -184,7 +184,7 @@ await bot.StartAsync();
 | **Atomic Item Claim** | `SELECT FOR UPDATE SKIP LOCKED` — no duplicate processing across bots |
 | **2-Layer Retry** | Tool-level (exponential backoff + circuit breaker) + Queue-level (nack/dead-letter) |
 | **Dead-Letter** | Failed items parked with reason, exception type, and full detail |
-| **4 Planner Types** | `Deliberative` (code) · `Manual` (JSON) · `LlmBased` · `AutonomyAware` |
+| **5 Planner Types** | `Reactive` (IRPA) · `Deliberative` (code) · `Manual` (JSON) · `LlmBased` · `AutonomyAware` |
 | **Variable Binding** | `${StepName.Results.Field}` resolved between plan steps at runtime |
 | **10 Built-in File Formats** | JSON · JSONL · JSONC · TXT · CSV · TSV · PSV · XML · XLSX · DOCX — no extra NuGet packages |
 | **Built-in Tools** | HTTP API · Folder ops · Windows UIAutomation (Win32/WPF/WinForms) · Playwright browser automation (opt-in) |

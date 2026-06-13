@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Valaiorp.Knowledge")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d78f43b75fa37e653e900a89cb3333566d7b510a")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b93d9c0bb7ea07abf5722e8711ac32c5a89cde65")]
 [assembly: System.Reflection.AssemblyProductAttribute("Valaiorp.Knowledge")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Valaiorp.Knowledge")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

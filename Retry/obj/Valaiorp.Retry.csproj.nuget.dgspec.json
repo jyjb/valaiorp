@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\._repos\\valaiorp\\Retry\\Valaiorp.Retry.csproj": {}
+    "Z:\\._repos\\valaiorp\\Retry\\Valaiorp.Retry.csproj": {}
   },
   "projects": {
-    "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj": {
+    "Z:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj",
+        "projectUniqueName": "Z:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj",
         "projectName": "Valaiorp.Core",
-        "projectPath": "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj",
+        "projectPath": "Z:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj",
         "packagesPath": "C:\\Users\\findj\\.nuget\\packages\\",
-        "outputPath": "D:\\._repos\\valaiorp\\Core\\obj\\",
+        "outputPath": "Z:\\._repos\\valaiorp\\Core\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -344,14 +344,14 @@
         }
       }
     },
-    "D:\\._repos\\valaiorp\\Retry\\Valaiorp.Retry.csproj": {
+    "Z:\\._repos\\valaiorp\\Retry\\Valaiorp.Retry.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\._repos\\valaiorp\\Retry\\Valaiorp.Retry.csproj",
+        "projectUniqueName": "Z:\\._repos\\valaiorp\\Retry\\Valaiorp.Retry.csproj",
         "projectName": "Valaiorp.Retry",
-        "projectPath": "D:\\._repos\\valaiorp\\Retry\\Valaiorp.Retry.csproj",
+        "projectPath": "Z:\\._repos\\valaiorp\\Retry\\Valaiorp.Retry.csproj",
         "packagesPath": "C:\\Users\\findj\\.nuget\\packages\\",
-        "outputPath": "D:\\._repos\\valaiorp\\Retry\\obj\\",
+        "outputPath": "Z:\\._repos\\valaiorp\\Retry\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -373,8 +373,8 @@
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
-              "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj": {
-                "projectPath": "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj"
+              "Z:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj": {
+                "projectPath": "Z:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj"
               }
             }
           }

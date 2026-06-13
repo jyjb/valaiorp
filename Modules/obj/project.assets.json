@@ -52,11 +52,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\._repos\\valaiorp\\Modules\\Valaiorp.Modules.csproj",
+      "projectUniqueName": "Z:\\._repos\\valaiorp\\Modules\\Valaiorp.Modules.csproj",
       "projectName": "Valaiorp.Modules",
-      "projectPath": "D:\\._repos\\valaiorp\\Modules\\Valaiorp.Modules.csproj",
+      "projectPath": "Z:\\._repos\\valaiorp\\Modules\\Valaiorp.Modules.csproj",
       "packagesPath": "C:\\Users\\findj\\.nuget\\packages\\",
-      "outputPath": "D:\\._repos\\valaiorp\\Modules\\obj\\",
+      "outputPath": "Z:\\._repos\\valaiorp\\Modules\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -78,11 +78,11 @@
         "net10.0": {
           "targetAlias": "net10.0",
           "projectReferences": {
-            "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj": {
-              "projectPath": "D:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj"
+            "Z:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj": {
+              "projectPath": "Z:\\._repos\\valaiorp\\Core\\Valaiorp.Core.csproj"
             },
-            "D:\\._repos\\valaiorp\\Tools\\Valaiorp.Tools.csproj": {
-              "projectPath": "D:\\._repos\\valaiorp\\Tools\\Valaiorp.Tools.csproj"
+            "Z:\\._repos\\valaiorp\\Tools\\Valaiorp.Tools.csproj": {
+              "projectPath": "Z:\\._repos\\valaiorp\\Tools\\Valaiorp.Tools.csproj"
             }
           }
         }
