@@ -21,6 +21,7 @@ namespace Valaiorp.Runtime.DependencyInjection
     using Valaiorp.LlmProviders.DependencyInjection;
     using Valaiorp.Retry.DependencyInjection;
     using Valaiorp.Tools.Contracts;
+    using Valaiorp.Tools.Governance;
     using Valaiorp.Modules;
     using Valaiorp.Tools.Enhanced.Logging;
     using Valaiorp.Tools.Registries;
@@ -39,9 +40,15 @@ namespace Valaiorp.Runtime.DependencyInjection
             // Core tool registries
             services.AddSingleton<ToolRegistry>();
             services.AddSingleton<ModuleRegistry>();
+
+            // Mandatory governance gate. The UnwiredExecutionGate refuses every tool call until
+            // the host opts in via services.AddGovernance(...) — tools never run ungoverned.
+            services.AddSingleton<IExecutionGate, UnwiredExecutionGate>();
+
             services.AddSingleton<ToolResolver>(sp => new ToolResolver(
                 sp.GetRequiredService<ToolRegistry>(),
                 sp.GetRequiredService<ModuleRegistry>(),
+                sp.GetRequiredService<IExecutionGate>(),
                 module => new ModuleTool(module)));
             services.AddSingleton<ModuleExecutor>();
 

@@ -53,5 +53,8 @@
   <Folder Name="/Guardrails/">
     <Project Path="Guardrails/Valaiorp.Guardrails.csproj" />
   </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/Valaiorp.Governance.Tests/Valaiorp.Governance.Tests.csproj" />
+  </Folder>
 
 </Solution>

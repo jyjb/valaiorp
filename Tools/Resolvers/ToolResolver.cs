@@ -2,6 +2,7 @@ namespace Valaiorp.Tools.Resolvers
 {
     using Valaiorp.Core.Contracts;
     using Valaiorp.Tools.Contracts;
+    using Valaiorp.Tools.Governance;
     using Valaiorp.Tools.Registries;
     using ExecutionContext = Valaiorp.Core.Contracts.ExecutionContext;
 
@@ -9,15 +10,21 @@ namespace Valaiorp.Tools.Resolvers
     {
         private readonly ToolRegistry _toolRegistry;
         private readonly ModuleRegistry _moduleRegistry;
+        private readonly IExecutionGate _gate;
         private readonly Func<IModule, ITool> _moduleToolFactory;
 
         public ToolResolver(
             ToolRegistry toolRegistry,
             ModuleRegistry moduleRegistry,
+            IExecutionGate gate,
             Func<IModule, ITool>? moduleToolFactory = null)
         {
             _toolRegistry = toolRegistry;
             _moduleRegistry = moduleRegistry;
+            _gate = gate ?? throw new ArgumentNullException(nameof(gate),
+                "An IExecutionGate is required so every tool call is governed. " +
+                "The runtime registers UnwiredExecutionGate by default; call " +
+                "services.AddGovernance(...) to install a real policy.");
             _moduleToolFactory = moduleToolFactory ?? (m => m.Tools.First());
         }
 
@@ -69,6 +76,11 @@ namespace Valaiorp.Tools.Resolvers
         {
             var tool = ResolveTool(toolId)
                 ?? throw new InvalidOperationException($"Tool '{toolId}' not found.");
+
+            // Mandatory governance gate: every tool call must be authorized before it runs.
+            var decision = await _gate.AuthorizeAsync(toolId, context, parameters, ct).ConfigureAwait(false);
+            if (!decision.IsAllowed)
+                return new ExecutionResult(toolId, context.Id, false, decision.Reason);
 
             var toolResult = await tool.ExecuteAsync(context, parameters, ct).ConfigureAwait(false);
             var annotated  = toolResult with { StepId = toolId };
